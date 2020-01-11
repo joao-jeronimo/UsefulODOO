@@ -2,19 +2,21 @@
 # -*- coding: utf8 -*-
 
 # Documentation:
-#  * First thing to do is to ad a swapfile, unless your system has 2GB of RAM.
+#  * First thing to do is to add a swapfile, unless your system has 2GB of RAM.
+#  * The config que parameters (in particular the odo branch) and run the script as root.
 
 import os
 import os.path
 import proclib
 
 # Parameters:
-INSTANCENAME    = "verdoo"
-THEBRANCH       = "13.0"
+INSTANCENAME    = "frpayslip"
+HTTPPORT        = "8071"
+THEBRANCH       = "12.0"
 MAIN_GIT_REMOTE_REPO    = "https://github.com/odoo/odoo.git"
 MAIN_GIT_LOCAL_REPO     = "/odoo/odoo-full-git/"
 
-# Facts of the universe:
+# Constants:
 ODOO_USERNAME = "odoo"
 
 
@@ -60,15 +62,22 @@ def createusers():
     proclib.runprog_shareout(["su", "postgres", "-c", "createuser -s "+ODOO_USERNAME])
 
 # Main ODOO source:
-def gitclone():
+def gitclone_or_update():
     os.chdir("/odoo/")
-    proclib.runprog_shareout(["git", "clone", MAIN_GIT_REMOTE_REPO, MAIN_GIT_LOCAL_REPO])
+    if not gitcloned():
+        proclib.runprog_shareout(["git", "clone", MAIN_GIT_REMOTE_REPO, MAIN_GIT_LOCAL_REPO])
 def gitcloned():
     return os.path.isdir(MAIN_GIT_LOCAL_REPO)
 
 # ODOO release branches:
 def clonebranch(the_branch):
-    proclib.runprog_shareout(["git", "clone", "-b", the_branch, "--single-branch", MAIN_GIT_LOCAL_REPO, branch_path(the_branch)])
+    os.chdir(MAIN_GIT_LOCAL_REPO)
+    proclib.runprog_shareout(["git", "checkout", THEBRANCH])
+    proclib.runprog_shareout(["git", "pull"])
+    
+    commlist = ["git", "clone", "-b", the_branch, "--single-branch", MAIN_GIT_LOCAL_REPO, branch_path(the_branch)]
+    print ("Running: %s" % (str(commlist),) )
+    proclib.runprog_shareout(commlist)
 def branchcloned(the_branch):
     return os.path.isdir(branch_path(the_branch))
 def branch_path(the_branch):
@@ -94,7 +103,7 @@ email_from = False
 ;geoip_database = /usr/share/GeoIP/GeoLite2-City.mmdb
 http_enable = True
 http_interface = 0.0.0.0
-http_port = 8070
+http_port = """+HTTPPORT+"""
 import_partial = 
 limit_memory_hard = 2684354560
 limit_memory_soft = 2147483648
@@ -175,13 +184,13 @@ def fixperms():
     proclib.runprog_shareout(["sudo", "chown", "odoo:odoo", "-R", "/odoo/"])
 
 
-def main():
-    createdirs()
-    installpackages()
-    createusers()
+def main(skipsysupdate=False):
+    if not skipsysupdate:
+        createdirs()
+        installpackages()
+        createusers()
     
-    if not gitcloned():
-        gitclone()
+    gitclone_or_update()
     if not is_instance_installed(INSTANCENAME):
         # Fetch the odoo source:
         # Clone the desired release branch:
@@ -194,4 +203,4 @@ def main():
     print("Start this instance with command:\n" +
           "sudo systemctl start odoo-"+INSTANCENAME)
 
-main()
+if __name__ == '__main__': main()
