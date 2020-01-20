@@ -55,9 +55,12 @@ class TaskMan:
             print("Task successfull: %s" % self.currentTask.taskSignature())
             self.currentTask = None
             # Save the task list:
-            #self.saveTaskList()
+            self.saveTaskList()
     
     def scheduleTask(self, taskfunc):
         self.newTasks.append(taskfunc)
     def scheduleChildTask(self, taskfunc):
         self.newChildreenTasks.append(taskfunc)
+    
+    def saveTaskList(self):
+        pass
