@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf8 -*-
-
+import pudb
 import os
 import socket
 from taskman import *
@@ -39,16 +39,19 @@ def intrCommand(command):
     parts = command.split()
     try:
         if parts[0] == "setupinstance":
-            return "Setting-up Odoo-%s instance '%s'." % (parts[1], parts[2],)
-            mainTaskMan.scheduleTask(OdooSetupDatabase(parts[1], parts[2], ))
+            (odoobranch, instance_name) = parts[1:]
+            mainTaskMan.scheduleTask(OdooSetupDatabase(MAIN_GIT_LOCAL_REPO, odoobranch, instance_name ))
+            return ("Setting-up Odoo-%s instance '%s'." % (odoobranch, instance_name), "Done!")
         if parts[0] == "startinstance":
             pass
         if parts[0] == "stopinstance":
             pass
         if parts[0] == "nginxconfig":
             pass
-    except IndexError:
-        return "Invalid syntax"
+        else:
+            return ("Invalid command.",)
+    except (IndexError, ValueError):
+        return ("Invalid syntax.",)
 
 def sendBack(conn, response):
     conn['connsocket'][0].send(response.encode())
@@ -71,8 +74,22 @@ def main():
                 tearDownNetwork(connection)
                 break
             commandresult = intrCommand(command)
-            sendBack(connection, commandresult)
+            try:
+                sendBack(connection, commandresult[0]+"\n")
+            except BrokenPipeError:
+                # I we cannot deliver response back to client, don't do the command.
+                print("Command aborted due to broken pipe.")
+                continue
+            #pudb.set_trace()
+            mainTaskMan.taskMan_main()
+            try:
+                if len(commandresult) > 1:
+                    sendBack(connection, commandresult[1]+"\n")
+            except BrokenPipeError:
+                # Client may not be interested in knowing that the command has ended, so ignore is pipe is broken.
+                pass
     finally:
+        print("Releasing the connection...")
         tearDownNetwork(connection)
 
 if __name__ == '__main__': main()

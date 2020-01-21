@@ -34,7 +34,9 @@ class TaskMan:
     pastTasks = set()
     
     def taskMan_main(self):
+        #pudb.set_trace()
         while len(self.taskList)>0 or len(self.newTasks)>0 or len(self.newChildreenTasks)>0:
+            #pudb.set_trace()
             # Add more tasks to the end of the queue:
             self.taskList = self.newChildreenTasks + self.taskList + self.newTasks
             self.newChildreenTasks.clear()
