@@ -4,7 +4,8 @@
 import pudb
 
 class RequirementNotSatisfiedException(Exception):
-    pass
+    def __init__(self, thetask, thefailreq):
+        super().__init__("Could not satisfy requirement %s for task %s" % (thefailreq, thetask))
 
 class Task:
     def taskSignature(self):
@@ -49,7 +50,7 @@ class TaskMan:
             requirements = self.currentTask.taskReqs()
             for thisReq in requirements:
                 if thisReq not in self.pastTasks:
-                    raise RequirementNotSatisfiedException()
+                    raise RequirementNotSatisfiedException(self.currentTask.taskSignature(), thisReq)
             self.currentTask.run(self)
             # After running the task:
             self.currentTask.tearDown(self)

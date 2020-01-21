@@ -4,19 +4,22 @@ import pudb
 import os
 import proclib
 from taskman import *
+from data import *
 
 class OdooTask(Task):
     # Auxiliary functions:
+    def systemd_file_exists(self, instance_name):
+        return os.path.isfile(self.systemd_file_path(instance_name))
     def systemd_file_path(self, instance_name):
         return ("/lib/systemd/system/odoo-%s.service"%instance_name)
-    def systemd_file_exists(self):
-        return os.path.isfile(self.systemd_file_path(self.instance_name))
-    def branchcloned(self):
-        return os.path.isdir(self.branch_path(self.odoobranch))
+    
+    def branchcloned(self, thebranch):
+        return os.path.isdir(self.branch_path(thebranch))
     def branch_path(self, thebranch):
         return "/odoo/releases/odoo-b%s/"%(thebranch,)
-    def configfile_exists(self):
-        return os.path.isdir(self.odoo_configfile_path(self.odoobranch))
+    
+    def configfile_exists(self, instance_name):
+        return os.path.isdir(self.odoo_configfile_path(instance_name))
     def odoo_configfile_path(self, instance_name):
         return ("/odoo/configs/odoo-%s.conf"%instance_name)
 
@@ -30,6 +33,22 @@ class OdooMkDirs(OdooTask):
                 os.mkdir(thedir)
             except FileExistsError:
                 pass
+
+class OdooProcConfig(OdooTask):
+    def __init__(self):
+        pass
+    def run(self, taskman):
+        if not os.path.isfile(SCRIPTCONFIG):
+            scriptconfigfile_obj = open(SCRIPTCONFIG, "w")
+            scriptconfigfile_obj.write("{'DB_PASSWORD': ''}")
+            scriptconfigfile_obj.close()
+        scriptconfigfile_obj = open(SCRIPTCONFIG, "r")
+        scriptconfigfile_contents = scriptconfigfile_obj.read()
+        scriptconfigfile_obj.close()
+        config_dikt = safe_eval(scriptconfigfile_contents)
+        
+        global DB_PASSWORD
+        DB_PASSWORD = config_dikt['DB_PASSWORD']
 
 class OdooFetch(OdooTask):
     def __init__(self, remotegitpath, localgitpath):
@@ -49,21 +68,20 @@ class OdooFetch(OdooTask):
 ###########################################
 ### Database setup main task - with childreen:
 class OdooSetupDatabase(OdooTask):
-    def __init__(self, localgitpath, odoobranch, instance_name):
+    def __init__(self, localgitpath, odoobranch, instance_name, httpport, odoo_username):
         self.localgitpath = localgitpath
         self.odoobranch = odoobranch
         self.instance_name = instance_name
+        self.httpport = httpport
+        self.odoo_username = odoo_username
     def taskReqs(self):
         return ['OdooMkDirs', 'OdooFetch']
     def run(self, taskman):
         print("Setting up instance '%s'..."%(self.instance_name))
-        if not self.branchcloned():
-            taskman.scheduleChildTask(OdooCloneBranch(self.localgitpath, self.odoobranch))
-            taskman.scheduleChildTask(OdooInstallBranchDeps(self.odoobranch))
-        if not self.configfile_exists():
-            taskman.scheduleChildTask(OdooCreateConfig(self.odoobranch, self.instance_name))
-        if not self.systemd_file_exists():
-            taskman.scheduleChildTask(OdooSystemdConfig(self.odoobranch, self.instance_name))
+        taskman.scheduleChildTask(OdooCloneBranch(self.localgitpath, self.odoobranch))
+        taskman.scheduleChildTask(OdooInstallBranchDeps(self.odoobranch))
+        taskman.scheduleChildTask(OdooCreateConfig(self.odoobranch, self.instance_name, self.httpport, self.odoo_username))
+        taskman.scheduleChildTask(OdooSystemdConfig(self.odoobranch, self.instance_name, self.odoo_username))
 
 class OdooCloneBranch(OdooTask):
     def __init__(self, localgitpath, odoobranch):
@@ -72,6 +90,8 @@ class OdooCloneBranch(OdooTask):
     def taskReqs(self):
         return ['OdooMkDirs', 'OdooFetch', 'OdooSetupDatabase']
     def run(self, taskman):
+        if self.branchcloned(self.odoobranch):
+            return
         print("Cloning branch %s..."%(self.odoobranch))
         os.chdir(self.localgitpath)
         proclib.runprog_shareout(["git", "checkout", self.odoobranch])
@@ -88,25 +108,48 @@ class OdooInstallBranchDeps(OdooTask):
         return ['OdooMkDirs', 'OdooFetch',
                 'OdooSetupDatabase', 'OdooCloneBranch']
     def run(self, taskman):
-        pass
+        os.chdir(self.branch_path(self.odoobranch))
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "-r", "requirements.txt"])
 
 class OdooCreateConfig(OdooTask):
-    def __init__(self, odoobranch, instance_name):
+    def __init__(self, odoobranch, instance_name, httpport, odoo_username):
         self.odoobranch = odoobranch
         self.instance_name = instance_name
+        self.httpport = httpport
+        self.odoo_username = odoo_username
     def taskReqs(self):
         return ['OdooMkDirs', 'OdooFetch',
                 'OdooSetupDatabase', 'OdooCloneBranch', 'OdooInstallBranchDeps']
     def run(self, taskman):
-        pass
+        if self.configfile_exists(self.instance_name):
+            return
+        configfile_concrete = ODOO_CONFIGFILE_TEMPLATE % {  
+                        'branchpath': self.branch_path(self.odoobranch),
+                        'instancename': self.instance_name,
+                        'httpport': self.httpport,
+                        'odoo_username': self.odoo_username,
+                        }
+        configfile_obj = open(self.odoo_configfile_path(self.instance_name), "w")
+        configfile_obj.write(configfile_concrete)
+        configfile_obj.close()
 
 class OdooSystemdConfig(OdooTask):
-    def __init__(self, odoobranch, instance_name):
+    def __init__(self, odoobranch, instance_name, odoo_username):
         self.odoobranch = odoobranch
         self.instance_name = instance_name
+        self.odoo_username = odoo_username
     def taskReqs(self):
         return ['OdooMkDirs', 'OdooFetch',
                 'OdooSetupDatabase', 'OdooCloneBranch', 'OdooInstallBranchDeps', 'OdooCreateConfig']
     def run(self, taskman):
-        pass
+        if self.systemd_file_exists(self.instance_name):
+            return
+        systemdfile_concrete = SYSTEMD_FILE_TEMPLATE % {
+                        'branchpath': self.branch_path(self.odoobranch),
+                        'instancename': self.instance_name,
+                        'odoo_username': self.odoo_username,
+                        }
+        systemdfile_obj = open(self.systemd_file_path(self.instance_name), "w")
+        systemdfile_obj.write(systemdfile_concrete)
+        systemdfile_obj.close()
 

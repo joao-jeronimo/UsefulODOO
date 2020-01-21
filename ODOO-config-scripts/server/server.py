@@ -3,11 +3,9 @@
 import pudb
 import os
 import socket
+from data import *
 from taskman import *
 from odootasks import *
-
-MAIN_GIT_REMOTE_REPO    = "https://github.com/odoo/odoo.git"
-MAIN_GIT_LOCAL_REPO     = "/odoo/odoo-full-git/"
 
 def setupNetwork(address, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,8 +37,8 @@ def intrCommand(command):
     parts = command.split()
     try:
         if parts[0] == "setupinstance":
-            (odoobranch, instance_name) = parts[1:]
-            mainTaskMan.scheduleTask(OdooSetupDatabase(MAIN_GIT_LOCAL_REPO, odoobranch, instance_name ))
+            (odoobranch, instance_name, httpport) = parts[1:]
+            mainTaskMan.scheduleTask(OdooSetupDatabase(MAIN_GIT_LOCAL_REPO, odoobranch, instance_name, httpport, ODOO_USERNAME ))
             return ("Setting-up Odoo-%s instance '%s'." % (odoobranch, instance_name), "Done!")
         if parts[0] == "startinstance":
             pass
@@ -61,6 +59,7 @@ def main():
     mainTaskMan = TaskMan()
     # Scheduling and running basic tasks:
     mainTaskMan.scheduleTask(OdooMkDirs())
+    mainTaskMan.scheduleTask(OdooProcConfig())
     mainTaskMan.scheduleTask(OdooFetch(MAIN_GIT_REMOTE_REPO, MAIN_GIT_LOCAL_REPO))
     mainTaskMan.taskMan_main()
     # Launching network:
