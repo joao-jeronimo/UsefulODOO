@@ -83,3 +83,21 @@ KillMode=mixed
 [Install]
 WantedBy=multi-user.target
 """
+
+
+NGINX_FILE_TEMPLATE = """
+server {
+       listen 80;
+       listen [::]:80;
+
+       server_name %(hostname)s;
+
+       root /var/www/example.com;
+       index index.html;
+
+       location / {
+               proxy_pass http://127.0.0.1:%(httpport)s/;
+               #try_files $uri $uri/ =404;
+       }
+}
+"""

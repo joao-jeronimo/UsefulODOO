@@ -45,7 +45,9 @@ def intrCommand(command):
         if parts[0] == "stopinstance":
             pass
         if parts[0] == "nginxconfig":
-            pass
+            (httpport, hostname) = parts[1:]
+            mainTaskMan.scheduleTask(OdooNginxConfig(httpport, hostname ))
+            return ("Configuring NGinx for website %s on port %s." % (hostname, httpport), "Done!")
         else:
             return ("Invalid command.",)
     except (IndexError, ValueError):

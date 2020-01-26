@@ -6,6 +6,8 @@ import proclib
 from taskman import *
 from data import *
 
+safe_eval = eval
+
 class OdooTask(Task):
     # Auxiliary functions:
     def systemd_file_exists(self, instance_name):
@@ -19,9 +21,19 @@ class OdooTask(Task):
         return "/odoo/releases/odoo-b%s/"%(thebranch,)
     
     def configfile_exists(self, instance_name):
-        return os.path.isdir(self.odoo_configfile_path(instance_name))
+        return os.path.isfile(self.odoo_configfile_path(instance_name))
     def odoo_configfile_path(self, instance_name):
         return ("/odoo/configs/odoo-%s.conf"%instance_name)
+    
+    def nginx_file_exists(self, hostname):
+        return os.path.isfile(self.nginx_vhost_file_path(hostname))
+    def nginx_vhost_file_path(self, hostname):
+        return ("/etc/nginx/sites-available/%s"%hostname)
+    
+    def nginx_symlink_exists(self, hostname):
+        return os.path.islink(self.nginx_vhost_symlink_path(hostname))
+    def nginx_vhost_symlink_path(self, hostname):
+        return ("/etc/nginx/sites-enabled/%s"%hostname)
 
 class OdooMkDirs(OdooTask):
     def __init__(self):
@@ -153,3 +165,53 @@ class OdooSystemdConfig(OdooTask):
         systemdfile_obj.write(systemdfile_concrete)
         systemdfile_obj.close()
 
+###########################################
+### Setting-uo Nginx virtual host:
+class OdooNginxConfig(OdooTask):
+    def __init__(self, httpport, hostname):
+        self.httpport = httpport
+        self.hostname = hostname
+    def taskReqs(self):
+        return []
+    def run(self, taskman):
+        taskman.scheduleChildTask(OdooNginxConfigFile(self.httpport, self.hostname))
+        taskman.scheduleChildTask(OdooNginxActivate(self.hostname))
+        taskman.scheduleChildTask(OdooNginxReload(self.hostname))
+
+class OdooNginxConfigFile(OdooTask):
+    def __init__(self, httpport, hostname):
+        self.httpport = httpport
+        self.hostname = hostname
+    def taskReqs(self):
+        return []
+    def run(self, taskman):
+        if self.nginx_file_exists(self.hostname):
+            return
+        nginx_file_concrete = NGINX_FILE_TEMPLATE % {
+                        'httpport': self.httpport,
+                        'hostname': self.hostname,
+                        }
+        nginx_file_obj = open(self.nginx_vhost_file_path(self.hostname), "w")
+        nginx_file_obj.write(nginx_file_concrete)
+        nginx_file_obj.close()
+
+class OdooNginxActivate(OdooTask):
+    def __init__(self, hostname):
+        self.hostname = hostname
+    def taskReqs(self):
+        return ['OdooNginxConfig']
+    def run(self, taskman):
+        if self.nginx_symlink_exists(self.hostname):
+            return
+        os.symlink(
+            self.nginx_vhost_file_path(self.hostname),
+            self.nginx_vhost_symlink_path(self.hostname)
+            )
+
+class OdooNginxReload(OdooTask):
+    def __init__(self, hostname):
+        self.hostname = hostname
+    def taskReqs(self):
+        return ['OdooNginxConfig', 'OdooNginxActivate']
+    def run(self, taskman):
+        proclib.runprog_shareout(["systemctl", "restart", "nginx"])
