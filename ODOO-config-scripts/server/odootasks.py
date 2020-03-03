@@ -121,6 +121,7 @@ class OdooInstallBranchDeps(OdooTask):
                 'OdooSetupDatabase', 'OdooCloneBranch']
     def run(self, taskman):
         os.chdir(self.branch_path(self.odoobranch))
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "pip"])   #TODO: Move this line to earlier tasks:
         proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "-r", "requirements.txt"])
 
 class OdooCreateConfig(OdooTask):

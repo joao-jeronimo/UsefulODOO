@@ -1,1 +1,16 @@
+
+== Ligar ao script:
+nc 127.0.0.1 10000
+
+== Criação de novas instâncias do ODOO:
 setupinstance odoobranch instance_name httpport
+
+== Setup do NGinx:
+nginxconfig httpport hostname
+
+== Outros comandos:
+stopserver
+
+== Como se obtem depois o certificado?
+sudo certbot --nginx
+E ainda é preciso colocar no ficherio de config a password da base de dados...
