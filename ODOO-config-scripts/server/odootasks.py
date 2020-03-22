@@ -62,6 +62,22 @@ class OdooProcConfig(OdooTask):
         global DB_PASSWORD
         DB_PASSWORD = config_dikt['DB_PASSWORD']
 
+class OdooInstallPackages(OdooTask):
+    def __init__(self):
+        pass
+    def run(self, taskman):
+        proclib.runprog_shareout(["sudo", "apt", "update"])
+        proclib.runprog_shareout(["sudo", "apt", "upgrade", "-y"])
+        proclib.runprog_shareout(["sudo", "apt", "dist-upgrade", "-y"])
+        
+        proclib.runprog_shareout(["apt", "install", "-y", "sudo", "postgresql", "postgresql-client", "links", "wkhtmltopdf", "less", "python3-pip", "openssh-server", "pwgen", "git", "ttf-mscorefonts-installer", "libpq-dev", "libjpeg-dev", "zlib1g-dev", "node-less", "libxml2-dev", "libxslt-dev"])
+        proclib.runprog_shareout(["apt", "build-dep", "-y", "python-ldap"])
+        
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "pip"])
+        #proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "six", "pillow", "python-dateutil", "pytz"])
+        #proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--ignore-installed", "pyserial"])
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "xlrd", "xlwt", "pyldap", "qrcode", "vobject", "num2words", "phonenumbers"])
+
 class OdooFetch(OdooTask):
     def __init__(self, remotegitpath, localgitpath):
         self.remotegitpath = remotegitpath

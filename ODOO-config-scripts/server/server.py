@@ -62,6 +62,7 @@ def main():
     # Scheduling and running basic tasks:
     mainTaskMan.scheduleTask(OdooMkDirs())
     mainTaskMan.scheduleTask(OdooProcConfig())
+    mainTaskMan.scheduleTask(OdooInstallPackages())
     mainTaskMan.scheduleTask(OdooFetch(MAIN_GIT_REMOTE_REPO, MAIN_GIT_LOCAL_REPO))
     mainTaskMan.taskMan_main()
     # Launching network:
