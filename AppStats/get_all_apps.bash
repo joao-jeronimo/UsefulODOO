@@ -29,3 +29,14 @@ sed -n -e "4~5p" trash/modpage_getting_script.bash > trash/modpage_getting_scrip
 #bash trash/modpage_getting_script.bash
 #grep '<td><b>License</b></td>' trash/mod_named_dev_payslip_batches_page.html
 
+grep '<td><b>License</b></td>' trash/mod_named_*.html | sort -u > Lista_licenças.txt
+
+rm Sumário_licenças.txt
+echo "GPL: " >> Sumário_licenças.txt
+cat Lista_licenças.txt | grep -i GPL | wc -l >> Sumário_licenças.txt
+
+echo "OPL: " >> Sumário_licenças.txt
+cat Lista_licenças.txt | grep -i OPL | wc -l >> Sumário_licenças.txt
+
+echo "Outras: " >> Sumário_licenças.txt
+cat Lista_licenças.txt | grep -i -v OPL | grep -i -v GPL | wc -l >> Sumário_licenças.txt
