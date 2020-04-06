@@ -9,3 +9,6 @@ done
 cat trash/Page*.html | grep -o 'href="/apps/modules/[0-9.]\+/[^"]\+"' | grep -o '/[^"]\+' | sort -u | tee all_apps_urls.txt
 echo "Total `wc -l all_apps_urls.txt` apps"
 
+# Prepend URL start:
+sed -e "s/^/https:\/\/apps.odoo.com/" all_apps_urls.txt > trash/tmp5.txt
+mv trash/tmp5.txt all_apps_urls.txt
