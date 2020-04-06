@@ -5,5 +5,5 @@ for i in {1..520}
 done
 
 
-cat Page*.html | grep -o 'href="/apps/modules/[0-9.]\+/[^"]\+"'
+cat Page*.html | grep -o 'href="/apps/modules/[0-9.]\+/[^"]\+"' | tee all_apps_urls.txt
 
