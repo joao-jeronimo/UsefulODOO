@@ -157,6 +157,7 @@ class OdooCreateConfig(OdooTask):
                         'instancename': self.instance_name,
                         'httpport': self.httpport,
                         'odoo_username': self.odoo_username,
+                        'db_password': DB_PASSWORD,
                         }
         configfile_obj = open(self.odoo_configfile_path(self.instance_name), "w")
         configfile_obj.write(configfile_concrete)
