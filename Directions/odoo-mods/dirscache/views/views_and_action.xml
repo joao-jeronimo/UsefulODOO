@@ -85,6 +85,9 @@
                         <field name="date_fetched" />
                         <field name="distance" />
                     </group>
+                    <group>
+                        <field name="waypoints_ids" />
+                    </group>
                 </sheet>
             </form>
         </field>

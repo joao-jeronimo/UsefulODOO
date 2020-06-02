@@ -60,5 +60,22 @@ class DirectionsRouteFetched(models.Model):
     
     name = fields.Char(related="fullfils_id.name")
     fullfils_id = fields.Many2one('directions.route.request', string="Fillfilled request")
+    server_id = fields.Many2one('directions.server', string="Origin Server")
     distance = fields.Float("Total route distance")
     date_fetched = fields.Datetime("Time fetched")
+    
+    waypoints_ids = fields.One2many('directions.route.waypoint', string="Waypoints", inverse_name="route_id")
+
+class DirectionsRouteFetched(models.Model):
+    _name = 'directions.route.waypoint'
+    
+    name = fields.Char ("Name", readonly=True, compute="_compute_name")
+    def _compute_name(selfs):
+        for self in selfs:
+            self.name = (_("Waypoint at lat=%.9f;long=%.9f")
+                            % (self.waypoint_lat, self.waypoint_long, ))
+    
+    route_id = fields.Many2one("directions.route", string="Route")
+    
+    waypoint_lat = fields.Float("Latitude", digits=(13, 9))
+    waypoint_long = fields.Float("Longitude", digits=(13, 9))

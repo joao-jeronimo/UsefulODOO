@@ -47,7 +47,12 @@ class DirectionsServer(models.Model):
             #raise UserError(err)
         # Interpret the JSON and build the direction:
         json_response = json.loads(r.text)
+        #pdb.set_trace()
+        waypoints_dikts = list(map(lambda wp: (0, -999, { 'waypoint_lat': wp[0], 'waypoint_long': wp[0], }),
+                                   json_response['features'][0]['geometry']['coordinates']))
         return {
-            'distance':         8787,
+            'distance':         json_response['features'][0]['properties']['segments'][0]['distance'],
             'fullfils_id':      request.id,
+            'server_id':        self.id,
+            'waypoints_ids':    waypoints_dikts,
             }
