@@ -7,7 +7,7 @@
 
 from odoo import api, fields, models, tools, _
 #from odoo.addons import decimal_precision as dp
-#from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
 #from odoo.addons.<modulename>.util import *
 
 #import logging
@@ -41,12 +41,24 @@ class DirectionsRouteRequest(models.Model):
     dst_lat = fields.Float("Destination Latitude", digits=(13, 9))
     dst_long = fields.Float("Destination Longitude", digits=(13, 9))
     
+    fullfiled_by_ids = fields.One2many('directions.route', inverse_name="fullfils_id", string="Fetched routes fullfilling this request")
+    
     def button_fetch(self):
         self.ensure_one()
         self.fetch_from_server(self.env['directions.server'].search([], limit=1))
     
     def fetch_from_server(self, server):
-        
-        
-        
+        # Following function has to return a directions.route dictionary:
+        thedirs_dikt = server.get_route(self)
+        thedirs_dikt['date_fetched'] = self.date_fetched
+        self.env['directions.route'].create(thedirs_dikt)
+        # Mark as fetched in this day:
         self.date_fetched = fields.Datetime.now()
+
+class DirectionsRouteFetched(models.Model):
+    _name = 'directions.route'
+    
+    name = fields.Char(related="fullfils_id.name")
+    fullfils_id = fields.Many2one('directions.route.request', string="Fillfilled request")
+    distance = fields.Float("Total route distance")
+    date_fetched = fields.Datetime("Time fetched")

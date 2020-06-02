@@ -12,5 +12,8 @@
         <menuitem   id="dirs_routes_requests"                                           action="action_directions_route_request"
                     name="Requests" sequence="10" groups="base.group_user"
                     parent="dirs_routes"/>
+        <menuitem   id="dirs_routes_fetched"                                                    action="action_directions_route"
+                    name="Fetched Routes" sequence="20" groups="base.group_user"
+                    parent="dirs_routes"/>
   </data>
 </odoo>
