@@ -77,7 +77,7 @@ After=network.target
 Type=simple
 User=%(odoo_username)s
 Group=%(odoo_username)s
-ExecStart=%(branchpath)s/odoo-bin --database=%(instancename)s --db-filter="%(instancename)s.*" --config /odoo/configs/odoo-%(instancename)s.conf --logfile /odoo/logs/odoo-%(instancename)s.log --init=base
+ExecStart=%(branchpath)s/odoo-bin --database=%(instancename)s --db-filter="%(instancename)s.*" --config /odoo/configs/odoo-%(instancename)s.conf --logfile /odoo/logs/odoo-%(instancename)s.log
 KillMode=mixed
 
 [Install]
