@@ -1,3 +1,7 @@
+# Preparação do sistema:
+sudo apt install sassc
+pip3 install polib
+
 
 # ODOO 11:
 export DBNAME="experiencia"
@@ -18,5 +22,4 @@ export DBNAME="experiencia"
 export DADIR="`pwd`"
 cd ~/KTrabalho/GITs/ODOO13-git
 source ~/KTrabalho/VirtualEnvs/odoove/bin/activate
-pip3 install polib
 ./odoo-bin -d odoo13_"$DBNAME" --db-filter=odoo13_"$DBNAME.*" --db_user=jj --addons=addons/ --without-demo=all -p8013
