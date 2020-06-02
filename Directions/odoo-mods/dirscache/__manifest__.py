@@ -5,7 +5,7 @@
     'version':'0.1',
     'author':'João Jerónimo',
     'data': [
-        'views/test_view.xml',
+        'views/views_and_action.xml',
         'views/menus.xml',
     ],
     'depends': [],

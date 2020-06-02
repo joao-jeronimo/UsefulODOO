@@ -17,7 +17,7 @@ from odoo import api, fields, models, tools, _
 #import pudb
 
 
-class MyExperienceModuçe(models.Model):
+class DirectionsServer(models.Model):
     _name = 'directions.server'
     
     name = fields.Char()
