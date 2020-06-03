@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data noupdate="0">
+
+        <record id="dirs_consumer" model="res.groups">
+            <field name="name">Direction Consumer</field>
+            <!--<field name="category_id" ref="acs_hms.module_category_hms"/>-->
+            <!--<field name="users" eval="[(4, ref('base.user_root'))]"/>-->
+            <!--<field name="implied_ids" eval="[(4, ref('acs_hms_ecv.group_expense_user'))]"/>-->
+        </record>
+        
+    </data>
+</odoo>

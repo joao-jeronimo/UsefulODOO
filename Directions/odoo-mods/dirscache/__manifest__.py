@@ -5,6 +5,9 @@
     'version':'0.1',
     'author':'João Jerónimo',
     'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        
         'views/views_and_action.xml',
         'views/menus.xml',
     ],

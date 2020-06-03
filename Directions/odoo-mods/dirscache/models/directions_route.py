@@ -54,6 +54,17 @@ class DirectionsRouteRequest(models.Model):
         self.env['directions.route'].create(thedirs_dikt)
         # Mark as fetched in this day:
         self.date_fetched = fields.Datetime.now()
+    
+    @api.model
+    def get_route(self, src_lat, src_long, dst_lat, dst_long):
+        request = self.create({
+            'src_lat':  src_lat,
+            'src_long': src_long,
+            'dst_lat':  dst_lat,
+            'dst_long': dst_long,
+            })
+        request.sudo().button_fetch()
+        return request.id
 
 class DirectionsRouteFetched(models.Model):
     _name = 'directions.route'
