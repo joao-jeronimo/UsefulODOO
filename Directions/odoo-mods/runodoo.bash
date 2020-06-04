@@ -19,3 +19,5 @@ export DADIR="`pwd`"
 cd ~/KTrabalho/GITs/ODOO13-git
 source ~/KTrabalho/VirtualEnvs/odoove/bin/activate
 ./odoo-bin -d odoo13_"$DBNAME" --db-filter=odoo13_"$DBNAME.*" --db_user=jj --addons=addons/,"$DADIR" --without-demo=all -p8013
+
+
