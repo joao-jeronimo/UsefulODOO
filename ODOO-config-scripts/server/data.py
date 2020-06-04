@@ -18,11 +18,11 @@ data_dir = /odoo/.local/share/Odoo
 db_host = localhost
 db_maxconn = 64
 db_name = %(instancename)s
-db_password = 
 db_port = 5432
 db_sslmode = prefer
 db_template = template1
 db_user = %(odoo_username)s
+db_password = %(db_password)s
 demo = {}
 email_from = False
 ;geoip_database = /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -77,7 +77,7 @@ After=network.target
 Type=simple
 User=%(odoo_username)s
 Group=%(odoo_username)s
-ExecStart=%(branchpath)s/odoo-bin --database=%(instancename)s --db-filter="%(instancename)s.*" --config /odoo/configs/odoo-%(instancename)s.conf --logfile /odoo/logs/odoo-%(instancename)s.log --init=base
+ExecStart=%(branchpath)s/odoo-bin --database=%(instancename)s --db-filter="%(instancename)s.*" --config /odoo/configs/odoo-%(instancename)s.conf --logfile /odoo/logs/odoo-%(instancename)s.log
 KillMode=mixed
 
 [Install]

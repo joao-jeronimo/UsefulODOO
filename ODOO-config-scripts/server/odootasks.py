@@ -62,6 +62,22 @@ class OdooProcConfig(OdooTask):
         global DB_PASSWORD
         DB_PASSWORD = config_dikt['DB_PASSWORD']
 
+class OdooInstallPackages(OdooTask):
+    def __init__(self):
+        pass
+    def run(self, taskman):
+        proclib.runprog_shareout(["sudo", "apt", "update"])
+        proclib.runprog_shareout(["sudo", "apt", "upgrade", "-y"])
+        proclib.runprog_shareout(["sudo", "apt", "dist-upgrade", "-y"])
+        
+        proclib.runprog_shareout(["apt", "install", "-y", "sudo", "postgresql", "postgresql-client", "links", "wkhtmltopdf", "less", "python3-pip", "openssh-server", "pwgen", "git", "ttf-mscorefonts-installer", "libpq-dev", "libjpeg-dev", "zlib1g-dev", "node-less", "libxml2-dev", "libxslt-dev"])
+        proclib.runprog_shareout(["apt", "build-dep", "-y", "python-ldap"])
+        
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "pip"])
+        #proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "six", "pillow", "python-dateutil", "pytz"])
+        #proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--ignore-installed", "pyserial"])
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "xlrd", "xlwt", "pyldap", "qrcode", "vobject", "num2words", "phonenumbers"])
+
 class OdooFetch(OdooTask):
     def __init__(self, remotegitpath, localgitpath):
         self.remotegitpath = remotegitpath
@@ -121,6 +137,7 @@ class OdooInstallBranchDeps(OdooTask):
                 'OdooSetupDatabase', 'OdooCloneBranch']
     def run(self, taskman):
         os.chdir(self.branch_path(self.odoobranch))
+        proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "--upgrade", "pip"])   #TODO: Move this line to earlier tasks:
         proclib.runprog_shareout(["sudo", "-H", "pip3", "install", "-r", "requirements.txt"])
 
 class OdooCreateConfig(OdooTask):
@@ -140,6 +157,7 @@ class OdooCreateConfig(OdooTask):
                         'instancename': self.instance_name,
                         'httpport': self.httpport,
                         'odoo_username': self.odoo_username,
+                        'db_password': DB_PASSWORD,
                         }
         configfile_obj = open(self.odoo_configfile_path(self.instance_name), "w")
         configfile_obj.write(configfile_concrete)

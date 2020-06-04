@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!--
+    <record id="view_directions_server_tree" model="ir.ui.view">
+        <field name="name">view_directions_server_tree</field>
+        <field name="model">directions.server</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_my_experience_form" model="ir.ui.view">
+        <field name="name">view_my_experience_form</field>
+        <field name="model">my.experience.module</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name" />
+                </group>
+            </form>
+        </field>
+    </record>
+    -->
+    
+    
+    
+    <!-- OOOOOOOOOOOOOOOOOOOOOOOOO -->
+    <record id="action_directions_server" model="ir.actions.act_window">
+        <field name="name">Directions Servers</field>
+        <field name="res_model">directions.server</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    
+    
+    
+    
+    <!-- OOOOOOOOOOOOOOOOOOOOOOOOO -->
+    <record id="view_directions_route_request_form" model="ir.ui.view">
+        <field name="name">view_directions_route_request_form</field>
+        <field name="model">directions.route.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="button_fetch" type="object" string="Fetch" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="date_requested" />
+                        <field name="date_fetched" />
+
+                        <field name="src_lat" />
+                        <field name="src_long" />
+                        <field name="dst_lat" />
+                        <field name="dst_long" />
+                    </group>
+                    <group>
+                        <field name="fullfiled_by_ids" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_directions_route_request" model="ir.actions.act_window">
+        <field name="name">Route requests</field>
+        <field name="res_model">directions.route.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    <!-- OOOOOOOOOOOOOOOOOOOOOOOOO -->
+    <record id="view_directions_route_form" model="ir.ui.view">
+        <field name="name">view_directions_route_form</field>
+        <field name="model">directions.route</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="fullfils_id" />
+                        <field name="date_fetched" />
+                        <field name="distance" />
+                    </group>
+                    <group>
+                        <field name="waypoints_ids" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_directions_route" model="ir.actions.act_window">
+        <field name="name">Routes</field>
+        <field name="res_model">directions.route</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

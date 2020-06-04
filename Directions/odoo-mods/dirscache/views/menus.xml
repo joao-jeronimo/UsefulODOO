@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <menuitem   id="dirscache_root"
+                name="Directions Cache Server" sequence="20" groups="base.group_user" />
+      <menuitem   id="dirs_servers"                                                     action="action_directions_server"
+                  name="Servers" sequence="30" groups="base.group_user"
+                  parent="dirscache_root"/>
+      <menuitem   id="dirs_routes"
+                  name="Routes" sequence="40" groups="base.group_user"
+                  parent="dirscache_root"/>
+        <menuitem   id="dirs_routes_requests"                                           action="action_directions_route_request"
+                    name="Requests" sequence="10" groups="base.group_user"
+                    parent="dirs_routes"/>
+        <menuitem   id="dirs_routes_fetched"                                                    action="action_directions_route"
+                    name="Fetched Routes" sequence="20" groups="base.group_user"
+                    parent="dirs_routes"/>
+  </data>
+</odoo>
