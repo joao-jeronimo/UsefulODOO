@@ -14,7 +14,7 @@ from odoo.exceptions import UserError, ValidationError
 #_logger = logging.getLogger(__name__)
 
 #import sys, traceback
-#import pudb
+import pdb
 
 
 class DirectionsRouteRequest(models.Model):
@@ -63,6 +63,7 @@ class DirectionsRouteRequest(models.Model):
             'dst_lat':  dst_lat,
             'dst_long': dst_long,
             })
+        #pdb.set_trace()
         request.sudo().button_fetch()
         return request.id
 
