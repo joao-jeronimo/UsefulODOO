@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <menuitem   id="menu_access_server_root"
+                    name="Access Server" sequence="20" groups="base.group_user" />
+
+        <menuitem   id="menu_as_commands" action="action_as_commands"
+                    name="Commands" sequence="30" groups="base.group_user"
+                    parent="menu_access_server_root"/>
+
+    </data>
+</odoo>
