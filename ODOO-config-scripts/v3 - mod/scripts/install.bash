@@ -69,7 +69,7 @@ sudo -H pip3 install -r requirements.txt
 # Install the config file:
 cat << EOF > "$ODOOMAN_DIR"/configs/odooman.conf
 [options]
-addons_path = $RELEASES_DIR/$ODOOMAN_ODOO_REL/addons
+addons_path = $RELEASES_DIR/$ODOOMAN_ODOO_REL/addons,$RELEASES_DIR/manager_mods
 #admin_passwd =
 csv_internal_sep = ,
 data_dir = /odoo/.local/share/Odoo
