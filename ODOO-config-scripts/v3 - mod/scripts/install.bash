@@ -156,7 +156,7 @@ sudo -u postgres bash -c "createuser -s $ODOO_USERNAME"
 ######################################
 sudo chown "$ODOO_USERNAME:$ODOO_USERNAME" -Rc "$ODOOMAN_DIR"/
 sudo chmod ug+rw,o-rwx -Rc "$ODOOMAN_DIR"/
-sudo find "$ODOOMAN_DIR"/ -type d -exec chmod ug+x {} \;
+sudo find "$ODOOMAN_DIR"/ -type d -exec chmod ug+sx {} \;
 
 sudo usermod -aG "$ODOO_USERNAME" "$USER"
 

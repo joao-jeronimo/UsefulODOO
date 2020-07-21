@@ -17,9 +17,16 @@
         <field name="model">access_server.command</field>
         <field name="arch" type="xml">
             <form>
-                <group>
-                    <field name="name" />
-                </group>
+                <header>
+                    <button name="button_execute" type="object" string="Execute" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="bash_code" />
+                        <field name="bash_result" readonly="1" />
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
