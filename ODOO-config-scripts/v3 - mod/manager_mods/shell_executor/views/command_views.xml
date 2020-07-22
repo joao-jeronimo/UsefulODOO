@@ -2,6 +2,7 @@
 <odoo>
     
     
+    <!-- Commands: -->
     <record id="view_as_commands_tree" model="ir.ui.view">
         <field name="name">view_as_commands_tree</field>
         <field name="model">access_server.command</field>
@@ -33,11 +34,54 @@
     
     
     
+    <!-- Command calls: -->
+    <record id="view_as_command_calls_tree" model="ir.ui.view">
+        <field name="name">view_as_command_calls_tree</field>
+        <field name="model">access_server.command.call</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="base_command" />
+                <field name="arguments_ids" widget="many2many_tags" />
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_as_command_calls_form" model="ir.ui.view">
+        <field name="name">view_as_command_calls_form</field>
+        <field name="model">access_server.command.call</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="button_execute" type="object" string="Execute" />
+                </header>
+                <sheet>
+                    <group col="2">
+                        <field name="base_command" />
+                        <field name="arguments_ids">
+                            <tree editable="bottom">
+                                <field name="key" />
+                                <field name="value" />
+                            </tree>
+                        </field>
+                        <field name="bash_result" readonly="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    
+    
     
 
     <record id="action_as_commands" model="ir.actions.act_window">
         <field name="name">Commands</field>
         <field name="res_model">access_server.command</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="action_as_commands_calls" model="ir.actions.act_window">
+        <field name="name">Calls</field>
+        <field name="res_model">access_server.command.call</field>
         <field name="view_mode">tree,form</field>
     </record>
 
