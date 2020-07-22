@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    
+    <!-- Odoo branches: -->
+<!--    <record id="view_as_odoo_branch_tree" model="ir.ui.view">
+        <field name="name">view_as_odoo_branch_tree</field>
+        <field name="model">access_server.odoo.branch</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_as_odoo_branch_form" model="ir.ui.view">
+        <field name="name">view_as_odoo_branch_form</field>
+        <field name="model">access_server.odoo.branch</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="button_execute" type="object" string="Execute" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="bash_code" />
+                        <field name="bash_result" readonly="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    -->
+    
+
+    
+    
+
+    <record id="action_as_odoo_releases" model="ir.actions.act_window">
+        <field name="name">Releases</field>
+        <field name="res_model">access_server.odoo.branch</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

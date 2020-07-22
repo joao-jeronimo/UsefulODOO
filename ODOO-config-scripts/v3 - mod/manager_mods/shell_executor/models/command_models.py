@@ -52,7 +52,7 @@ class ExecutorCommandCall(models.Model):
     def name_get(self):
         res = []
         for c in self:
-            repres = _("%s") % (self.base_command, )
+            repres = _("%s") % (self.base_command.name, )
             res.append((c.id, repres))
         return res
     

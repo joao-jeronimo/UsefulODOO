@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <menuitem   id="menu_as_odoo"
+                    name="Odoo" sequence="30" groups="base.group_user"
+                    parent="shell_executor.menu_access_server_root"/>
+
+        <menuitem   id="menu_as_odoo_releases" action="action_as_odoo_releases"
+                    name="Releases" sequence="10" groups="base.group_user"
+                    parent="menu_as_odoo"/>
+        <!--<menuitem   id="menu_as_commands_calls" action="action_as_commands_calls"
+                    name="Calls" sequence="20" groups="base.group_user"
+                    parent="menu_as_commands"/>-->
+
+    </data>
+</odoo>
