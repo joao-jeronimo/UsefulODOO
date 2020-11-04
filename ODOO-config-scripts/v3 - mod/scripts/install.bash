@@ -32,17 +32,17 @@ mkdir "$ODOOMAN_DIR"/configs/
 mkdir "$ODOOMAN_DIR"/logs/
 mkdir "$RELEASES_DIR"/
 
-# Generate and prepare a password:
-export ODOO_PASSWORD=`pwgen -c -n 40 1 --secure | tr -d "\n"`
-echo "{'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
-
 # Install dependencies:
 sudo apt update
 sudo apt upgrade -y
 sudo apt dist-upgrade -y
 
-apt install -y sudo postgresql postgresql-client links wkhtmltopdf less python3-pip openssh-server pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev zlib1g-dev node-less libxml2-dev libxslt-dev
+apt install -y sudo postgresql postgresql-client links wkhtmltopdf less python3-pip openssh-server pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev zlib1g-dev node-less libxml2-dev libxslt-dev pwgen
 apt build-dep -y python3-ldap
+
+# Generate and prepare a password:
+export ODOO_PASSWORD=`pwgen -c -n 40 1 --secure | tr -d "\n"`
+echo "{'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
 
 sudo -H pip3 install --upgrade pip
 sudo -H pip3 install --upgrade six pillow python-dateutil pytz
