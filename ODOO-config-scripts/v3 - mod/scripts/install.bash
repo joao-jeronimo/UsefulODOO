@@ -156,12 +156,16 @@ sudo -u postgres bash -c "createuser -s $ODOO_USERNAME"
 ######################################
 sudo chown "$ODOO_USERNAME:$ODOO_USERNAME" -Rc "$ODOOMAN_DIR"/
 sudo chmod ug+rw,o-rwx -Rc "$ODOOMAN_DIR"/
-sudo find "$ODOOMAN_DIR"/ -type d -exec chmod ug+sx {} \;
+sudo find "$ODOOMAN_DIR"/ -type d -exec chmod ug+sx -c {} \;
 
 sudo usermod -aG "$ODOO_USERNAME" "$USER"
 
 unset ODOO_PASSWORD
 
-# Known Caveats:
+echo "================================="
+echo "======= Installation Done ======="
+echo "================================="
+echo ""
+echo "== Known Caveats:"
 echo "Error: psycopg2.errors.InvalidParameterValue: new encoding (UTF8) is incompatible with the encoding of the template database (SQL_ASCII)"
 echo "https://stackoverflow.com/questions/16736891/pgerror-error-new-encoding-utf8-is-incompatible"
