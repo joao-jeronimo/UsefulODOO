@@ -70,6 +70,9 @@ git clone --single-branch -b "$ODOOMAN_ODOO_REL" "$MAIN_GIT_LOCAL_REPO" "$RELEAS
 cd "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL"
 sudo -H pip3 install -r requirements.txt
 
+# Put modules in their place:
+cp -Rv ../manager_mods/* /odoo/manager_mods/
+
 # Install the config file:
 cat << EOF > "$ODOOMAN_DIR"/configs/odooman.conf
 [options]
