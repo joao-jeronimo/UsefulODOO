@@ -31,6 +31,7 @@ mkdir "$ODOOMAN_DIR"/
 mkdir "$ODOOMAN_DIR"/configs/
 mkdir "$ODOOMAN_DIR"/logs/
 mkdir "$RELEASES_DIR"/
+mkdir "$ODOOMAN_DIR"/manager_mods
 
 # Install dependencies:
 sudo apt update
@@ -72,7 +73,7 @@ sudo -H pip3 install -r requirements.txt
 # Install the config file:
 cat << EOF > "$ODOOMAN_DIR"/configs/odooman.conf
 [options]
-addons_path = $RELEASES_DIR/$ODOOMAN_ODOO_REL/addons,$RELEASES_DIR/manager_mods
+addons_path = $RELEASES_DIR/$ODOOMAN_ODOO_REL/addons,$ODOOMAN_DIR/manager_mods
 #admin_passwd =
 csv_internal_sep = ,
 data_dir = /odoo/.local/share/Odoo
