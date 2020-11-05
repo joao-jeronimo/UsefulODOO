@@ -61,6 +61,9 @@ sudo useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
 # Setup Odoo Manager:
 ######################################
 # Clone the 13 version from the main tree:
+pushd "$MAIN_GIT_LOCAL_REPO"
+git checkout "$ODOOMAN_ODOO_REL"
+popd
 git clone --single-branch -b "$ODOOMAN_ODOO_REL" "$MAIN_GIT_LOCAL_REPO" "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL"
 # Install version-specific deps:
 cd "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL"
