@@ -17,11 +17,14 @@ popd
         <field name="base_command" ref="command_gitpull" />
         <field name="arguments_ids" eval="[
                 (5, 0, 0),
-                (0, 0, { 'key': 'MAIN_GIT_LOCAL_REPO', 'value': '/odoo/odoo-full-git/',  }),
-                (0, 0, { 'key': 'BRANCH_NAME', 'value': '12.0',  }),
+                (0, 0, { 'key': 'MAIN_GIT_LOCAL_REPO',  'value': '/odoo/odoo-full-git/', }),
+                (0, 0, { 'key': 'BRANCH_NAME',          'value': '12.0', }),
                 ]" />
     </record>
+    
+    
 
+    <!-- Create odoo config -->
     <record id="command_newconfig" model="access_server.command">
         <field name="name">Create new config for giver Odoo instance</field>
         <field name="bash_code">
@@ -93,10 +96,43 @@ EOF
         <field name="base_command" ref="command_newconfig" />
         <field name="arguments_ids" eval="[
                 (5, 0, 0),
-                (0, 0, { 'key': 'INSTANCENAME', 'value': 'sidiltestes',  }),
-                (0, 0, { 'key': 'BRANCHPATH', 'value': '/odoo/releases/13.0/',  }),
-                (0, 0, { 'key': 'ODOO_USERNAME', 'value': 'odoo',  }),
-                (0, 0, { 'key': 'HTTPPORT', 'value': '4013',  }),
+                (0, 0, { 'key': 'INSTANCENAME',         'value': 'sidiltestes', }),
+                (0, 0, { 'key': 'BRANCHPATH',           'value': '/odoo/releases/13.0/', }),
+                (0, 0, { 'key': 'ODOO_USERNAME',        'value': 'odoo', }),
+                (0, 0, { 'key': 'HTTPPORT',             'value': '4013', }),
+                ]" />
+    </record>
+    
+    
+
+    <!-- Clone or update given branch: -->
+    <record id="command_clonebranch" model="access_server.command">
+        <field name="name">Clone a branch from general repository</field>
+        <field name="bash_code">## Args: MAIN_GIT_LOCAL_REPO BRANCH_NAME BRANCH_PATH
+if [ -d "%(BRANCH_PATH)s" ]
+	then
+    echo "== Branch already cloned. Pulling..."
+    pushd %(BRANCH_PATH)s
+    git pull
+    popd
+else
+    pushd %(MAIN_GIT_LOCAL_REPO)s
+    echo "== Checking out branch %(BRANCH_NAME)s:"
+    git checkout %(BRANCH_NAME)s
+    popd
+    echo "== Cloning branch %(BRANCH_NAME)s:"
+    git clone -b %(BRANCH_NAME)s --single-branch %(MAIN_GIT_LOCAL_REPO)s %(BRANCH_PATH)s
+fi
+        </field>
+    </record>
+
+    <record id="call_clonebranch" model="access_server.command.call">
+        <field name="base_command" ref="command_clonebranch" />
+        <field name="arguments_ids" eval="[
+                (5, 0, 0),
+                (0, 0, { 'key': 'MAIN_GIT_LOCAL_REPO',  'value': '/odoo/odoo-full-git/', }),
+                (0, 0, { 'key': 'BRANCH_NAME',          'value': '13.0', }),
+                (0, 0, { 'key': 'BRANCH_PATH',          'value': '/odoo/releases/13.0/', }),
                 ]" />
     </record>
 
