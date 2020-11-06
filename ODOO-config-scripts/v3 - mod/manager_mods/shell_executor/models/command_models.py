@@ -7,13 +7,14 @@ from odoo.tools.safe_eval import safe_eval
 
 from odoo import api, fields, models, tools, _
 #from odoo.addons import decimal_precision as dp
-#from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.addons.shell_executor.util import proclib
+import subprocess
 
 #import logging
 #_logger = logging.getLogger(__name__)
 
-#import sys, traceback
+import os, sys, traceback
 #import pudb
 
 
@@ -28,8 +29,15 @@ class ExecutorCommand(models.Model):
         # Substitute arguments:
         real_bash_code = self.bash_code%locals_dict
         # Execute the code on local host:
-        bash_result = proclib.run_into_string(['/bin/bash', '-c', real_bash_code])
+        outfilename = "/odoo/logs/manager/"+str(self.id)
+        if os.path.isfile(outfilename)
+            raise UserError("The call is already running.")
+        with open(outfilename, "w") as outfile:
+            #bash_result = proclib.run_into_string(['/bin/bash', '-c', real_bash_code])
+            subprocess.Popen( ['/bin/bash', '-c', real_bash_code], stdout=outfile, stderr=subprocess.STDOUT)
         # Save the resulting text:
+        with open(outfilename, "r") as outfile:
+            bash_result = outfile.read()
         return bash_result
     
     bash_result = fields.Text(string="Command result")

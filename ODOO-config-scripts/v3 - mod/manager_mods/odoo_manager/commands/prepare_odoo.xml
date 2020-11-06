@@ -12,7 +12,6 @@ git pull
 popd
         </field>
     </record>
-
     <record id="call_gitpull" model="access_server.command.call">
         <field name="base_command" ref="command_gitpull" />
         <field name="arguments_ids" eval="[
@@ -91,7 +90,6 @@ EOF
 
         </field>
     </record>
-
     <record id="call_newconfig" model="access_server.command.call">
         <field name="base_command" ref="command_newconfig" />
         <field name="arguments_ids" eval="[
@@ -125,7 +123,6 @@ else
 fi
         </field>
     </record>
-
     <record id="call_clonebranch" model="access_server.command.call">
         <field name="base_command" ref="command_clonebranch" />
         <field name="arguments_ids" eval="[
@@ -133,6 +130,28 @@ fi
                 (0, 0, { 'key': 'MAIN_GIT_LOCAL_REPO',  'value': '/odoo/odoo-full-git/', }),
                 (0, 0, { 'key': 'BRANCH_NAME',          'value': '13.0', }),
                 (0, 0, { 'key': 'BRANCH_PATH',          'value': '/odoo/releases/13.0/', }),
+                ]" />
+    </record>
+    
+    
+
+    <!-- Dependency installation - this will be done as the odoo user: -->
+    <record id="command_installdeps" model="access_server.command">
+        <field name="name">Install needed python dependencies</field>
+        <field name="bash_code">## Args: BRANCH_PATH
+pushd %(BRANCH_PATH)s
+echo "== Upgrading pip..."
+pip3 install --upgrade pip
+echo "== Instaling packages listed in requirements.txt..."
+pip3 install -r requirements.txt
+popd
+        </field>
+    </record>
+    <record id="call_installdeps" model="access_server.command.call">
+        <field name="base_command" ref="command_installdeps" />
+        <field name="arguments_ids" eval="[
+                (5, 0, 0),
+                (0, 0, { 'key': 'BRANCH_PATH',          'value': '/odoo/releases/12.0/', }),
                 ]" />
     </record>
 
