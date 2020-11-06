@@ -6,6 +6,7 @@
     'data': [
         'views/odoo_views.xml',
         'views/menus.xml',
+        'commands/prepare_odoo.xml',
     ],
     'depends': [
         'shell_executor',

@@ -38,7 +38,10 @@ sudo apt update
 sudo apt upgrade -y
 sudo apt dist-upgrade -y
 
-apt install -y sudo postgresql postgresql-client links wkhtmltopdf less python3-pip openssh-server pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev zlib1g-dev node-less libxml2-dev libxslt-dev pwgen
+apt install -y sudo links less openssh-server
+apt install -y postgresql postgresql-client
+apt install -y wkhtmltopdf python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev
+apt install -y zlib1g-dev
 apt build-dep -y python3-ldap
 
 # Generate and prepare a password:
@@ -96,8 +99,11 @@ http_enable = True
 http_interface = 0.0.0.0
 http_port = 8000
 import_partial = 
-limit_memory_hard = 2684354560
+
+#limit_memory_hard = 2684354560
+limit_memory_hard = 5368709120
 limit_memory_soft = 2147483648
+
 limit_request = 8192
 limit_time_cpu = 60
 limit_time_real = 120

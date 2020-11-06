@@ -59,11 +59,12 @@ class ExecutorCommandCall(models.Model):
     #####################
     ### Buttons: ########
     #####################
-    def button_execute(self):
+    def button_execute(self, otherargs={}):
         self.ensure_one()
         locals_dict = dict()
         for thisArg in self.arguments_ids:
             locals_dict[thisArg.key] = thisArg.value
+        locals_dict.update(otherargs)
         self.bash_result = self.base_command.execute(locals_dict)
 
 class ExecutorCommandArgument(models.Model):
@@ -76,6 +77,6 @@ class ExecutorCommandArgument(models.Model):
     def name_get(self):
         res = []
         for c in self:
-            repres = _("(%s: %s)") % (self.key, self.value, )
+            repres = _("(%s: %s)") % (c.key, c.value, )
             res.append((c.id, repres))
         return res

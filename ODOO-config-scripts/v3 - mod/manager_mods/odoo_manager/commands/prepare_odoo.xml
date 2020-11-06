@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="command_gitpull" model="access_server.command">
+        <field name="name">Git pull a repository branch</field>
+        <field name="bash_code">
+pushd %(MAIN_GIT_LOCAL_REPO)s
+echo "== Checking out %(BRANCH_NAME)s branch:"
+git checkout %(BRANCH_NAME)s
+echo "== Pulling from origin:"
+git pull
+popd
+        </field>
+    </record>
+
+    <record id="call_gitpull" model="access_server.command.call">
+        <field name="base_command" ref="command_gitpull" />
+        <field name="arguments_ids" eval="[
+                (5, 0, 0),
+                (0, 0, { 'key': 'MAIN_GIT_LOCAL_REPO', 'value': '/odoo/odoo-full-git/',  }),
+                (0, 0, { 'key': 'BRANCH_NAME', 'value': '12.0',  }),
+                ]" />
+    </record>
+
+</odoo>
