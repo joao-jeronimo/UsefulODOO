@@ -46,7 +46,7 @@ apt build-dep -y python3-ldap
 
 # Generate and prepare a password:
 export ODOO_PASSWORD=`pwgen -c -n 40 1 --secure | tr -d "\n"`
-echo "{'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
+echo "CONFIG={'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
 
 sudo -H pip3 install --upgrade pip
 sudo -H pip3 install --upgrade six pillow python-dateutil pytz
