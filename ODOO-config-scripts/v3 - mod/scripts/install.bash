@@ -182,3 +182,13 @@ echo ""
 echo "== Known Caveats:"
 echo "Error: psycopg2.errors.InvalidParameterValue: new encoding (UTF8) is incompatible with the encoding of the template database (SQL_ASCII)"
 echo "https://stackoverflow.com/questions/16736891/pgerror-error-new-encoding-utf8-is-incompatible"
+echo ""
+#######################################
+echo "== Falta fazer:"
+echo "odoo    ALL=(ALL) NOPASSWD:/odoo/manager/catinto"
+echo "# Criar ficheiro /odoo/manager/catinto"
+echo "   #!/bin/bash
+echo "   export INSTANCENAME="$1""
+echo "   cat > /lib/systemd/system/odoo-"$INSTANCENAME".service"
+echo ""
+echo "# Falta securizar este ficheiro: não deverá deixar sobre-escrever ficheiros existentes..."

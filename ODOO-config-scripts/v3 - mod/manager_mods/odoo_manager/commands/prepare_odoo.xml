@@ -27,23 +27,23 @@ popd
     <record id="command_newconfig" model="access_server.command">
         <field name="name">Create new config for Odoo instance</field>
         <field name="bash_code">
-export DB_PASSWORD=`python3 -c 'with open("/odoo/odooconfig.conf") as f: exec(f.read()); print(CONFIG["DB_PASSWORD"])'`
+#export DB_PASSWORD=`python3 -c 'with open("/odoo/odooconfig.conf") as f: exec(f.read()); print(CONFIG["DB_PASSWORD"])'`
 
 # Install the config file:
-cat &lt;&lt; EOF &gt; /odoo/configs/%(INSTANCENAME)s.conf
+cat &lt;&lt; EOF &gt; /odoo/configs/odoo-%(INSTANCENAME)s.conf
 [options]
 addons_path = %(BRANCHPATH)s/addons
 #admin_passwd =
 csv_internal_sep = ,
 data_dir = /odoo/.local/share/Odoo
-db_host = localhost
+#db_host = localhost
+#db_port = 5432
+#db_password = (not needed)
 db_maxconn = 64
 db_name = %(INSTANCENAME)s
-db_port = 5432
 db_sslmode = prefer
 db_template = template1
 db_user = %(ODOO_USERNAME)s
-db_password = $DB_PASSWORD
 demo = {}
 email_from = False
 ;geoip_database = /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -105,27 +105,35 @@ EOF
 
     <!-- Create Systemd file: -->
     <record id="command_systemdconfig" model="access_server.command">
-        <field name="name">Create new config for Odoo instance</field>
+        <field name="name">Create new SystemD startup file for Odoo instance</field>
         <field name="bash_code">
-export DB_PASSWORD=`python3 -c 'with open("/odoo/odooconfig.conf") as f: exec(f.read()); print(CONFIG["DB_PASSWORD"])'`
-
 # Install the config file:
-cat &lt;&lt; EOF &gt; /odoo/configs/%(INSTANCENAME)s.conf
+sudo /odoo/manager/catinto "%(INSTANCENAME)s" &lt;&lt; EOF
 
+[Unit]
+Description=Odoo-instance-%(INSTANCENAME)s
+After=network.target
 
+[Service]
+Type=simple
+User=%(ODOO_USERNAME)s
+Group=%(ODOO_USERNAME)s
+ExecStart=%(BRANCHPATH)s/odoo-bin --database=%(INSTANCENAME)s --db-filter="%(INSTANCENAME)s.*" --config /odoo/configs/odoo-%(INSTANCENAME)s.conf --logfile /odoo/logs/odoo-%(INSTANCENAME)s.log
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
 
 EOF
-
         </field>
     </record>
-    <record id="call_newconfig" model="access_server.command.call">
-        <field name="base_command" ref="command_newconfig" />
+    <record id="call_systemdconfig" model="access_server.command.call">
+        <field name="base_command" ref="command_systemdconfig" />
         <field name="arguments_ids" eval="[
                 (5, 0, 0),
                 (0, 0, { 'key': 'INSTANCENAME',         'value': 'sidiltestes', }),
                 (0, 0, { 'key': 'BRANCHPATH',           'value': '/odoo/releases/13.0/', }),
                 (0, 0, { 'key': 'ODOO_USERNAME',        'value': 'odoo', }),
-                (0, 0, { 'key': 'HTTPPORT',             'value': '4013', }),
                 ]" />
     </record>
     
