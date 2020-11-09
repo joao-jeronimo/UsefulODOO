@@ -23,9 +23,9 @@ popd
     
     
 
-    <!-- Create odoo config -->
+    <!-- Create odoo config: -->
     <record id="command_newconfig" model="access_server.command">
-        <field name="name">Create new config for giver Odoo instance</field>
+        <field name="name">Create new config for Odoo instance</field>
         <field name="bash_code">
 export DB_PASSWORD=`python3 -c 'with open("/odoo/odooconfig.conf") as f: exec(f.read()); print(CONFIG["DB_PASSWORD"])'`
 
@@ -86,6 +86,34 @@ translate_modules = ['all']
 unaccent = False
 without_demo = True
 workers = 0
+EOF
+
+        </field>
+    </record>
+    <record id="call_newconfig" model="access_server.command.call">
+        <field name="base_command" ref="command_newconfig" />
+        <field name="arguments_ids" eval="[
+                (5, 0, 0),
+                (0, 0, { 'key': 'INSTANCENAME',         'value': 'sidiltestes', }),
+                (0, 0, { 'key': 'BRANCHPATH',           'value': '/odoo/releases/13.0/', }),
+                (0, 0, { 'key': 'ODOO_USERNAME',        'value': 'odoo', }),
+                (0, 0, { 'key': 'HTTPPORT',             'value': '4013', }),
+                ]" />
+    </record>
+    
+    
+
+    <!-- Create Systemd file: -->
+    <record id="command_systemdconfig" model="access_server.command">
+        <field name="name">Create new config for Odoo instance</field>
+        <field name="bash_code">
+export DB_PASSWORD=`python3 -c 'with open("/odoo/odooconfig.conf") as f: exec(f.read()); print(CONFIG["DB_PASSWORD"])'`
+
+# Install the config file:
+cat &lt;&lt; EOF &gt; /odoo/configs/%(INSTANCENAME)s.conf
+
+
+
 EOF
 
         </field>

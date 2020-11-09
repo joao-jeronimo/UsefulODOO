@@ -22,40 +22,51 @@ class ExecutorCommand(models.Model):
     _name = 'access_server.command'
     
     name = fields.Char(string="Name")
-    
     bash_code = fields.Text(string="Bash code to execute")
-    def execute(self, locals_dict):
+    
+    def execute(self, outfilename, locals_dict={}):
         self.ensure_one()
         # Substitute arguments:
         real_bash_code = self.bash_code%locals_dict
         # Execute the code on local host:
-        outfilename = "/odoo/logs/manager/"+str(self.id)
-        if os.path.isfile(outfilename)
-            raise UserError("The call is already running.")
         with open(outfilename, "w") as outfile:
-            #bash_result = proclib.run_into_string(['/bin/bash', '-c', real_bash_code])
             subprocess.Popen( ['/bin/bash', '-c', real_bash_code], stdout=outfile, stderr=subprocess.STDOUT)
-        # Save the resulting text:
-        with open(outfilename, "r") as outfile:
-            bash_result = outfile.read()
-        return bash_result
-    
-    bash_result = fields.Text(string="Command result")
-    
-    #####################
-    ### Buttons: ########
-    #####################
-    def button_execute(self):
-        self.ensure_one()
-        self.bash_result = self.execute()
 
 class ExecutorCommandCall(models.Model):
     _name = 'access_server.command.call'
     
+    state = fields.Selection([
+                ('never_executed',  "Never Executed"),
+                ('done',            "Done"),
+                ('now_executing',   "Now Executing"),
+                ], string="State", default='never_executed', compute="_compute_state")
+    def _compute_state(calls):
+        for self in calls:
+            filename = self.get_stdout_filename()
+            if not os.path.isfile(filename):
+                self.state = 'never_executed'
+            else:
+                fuser_exitcode = subprocess.Popen( ['fuser', filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
+                if fuser_exitcode == 0:
+                    self.state = 'now_executing'
+                else:
+                    self.state = 'done'
+    
     base_command = fields.Many2one("access_server.command", string="The base command to execute")
     arguments_ids = fields.One2many("access_server.command.argument", inverse_name="call_id",
                                    string="Arguments")
-    bash_result = fields.Text(string="Command result")
+    bash_result = fields.Text(string="Command result", compute="_compute_bash_result")
+    def _compute_bash_result(self):
+        for thisCall in self:
+            filename = thisCall.get_stdout_filename()
+            if os.path.isfile(filename):
+                with open(filename, "r") as theFile:
+                    thisCall.bash_result = theFile.read()
+            else:
+                thisCall.bash_result = "(Never executed)"
+    
+    def get_stdout_filename(self):
+        return "/odoo/logs/manager/"+str(self.id)
     
     def name_get(self):
         res = []
@@ -69,11 +80,15 @@ class ExecutorCommandCall(models.Model):
     #####################
     def button_execute(self, otherargs={}):
         self.ensure_one()
+        # Cancel if already executing:
+        if self.state=='now_executing':
+            raise UserError("Already executing.")
+        # Do execute:
         locals_dict = dict()
         for thisArg in self.arguments_ids:
             locals_dict[thisArg.key] = thisArg.value
         locals_dict.update(otherargs)
-        self.bash_result = self.base_command.execute(locals_dict)
+        self.base_command.execute(self.get_stdout_filename(), locals_dict)
 
 class ExecutorCommandArgument(models.Model):
     _name = 'access_server.command.argument'

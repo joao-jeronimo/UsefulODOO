@@ -25,7 +25,6 @@
                     <group>
                         <field name="name" />
                         <field name="bash_code" />
-                        <field name="bash_result" readonly="1" />
                     </group>
                 </sheet>
             </form>
@@ -53,6 +52,8 @@
             <form>
                 <header>
                     <button name="button_execute" type="object" string="Execute" />
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="never_executed,done,now_executing" />
                 </header>
                 <sheet>
                     <group col="2">
