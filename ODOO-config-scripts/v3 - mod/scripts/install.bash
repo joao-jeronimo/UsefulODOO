@@ -51,6 +51,7 @@ echo "CONFIG={'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
 sudo -H pip3 install --upgrade pip
 sudo -H pip3 install --upgrade six pillow python-dateutil pytz
 sudo -H pip3 install --ignore-installed pyserial psycopg2-binary
+sudo -H pip3 install --upgrade unidecode    # SEPA modules need this.
 
 sudo -H pip3 install xlrd xlwt pyldap qrcode vobject num2words phonenumbers
 
