@@ -44,23 +44,24 @@ mkdir "$RELEASES_DIR"/
 mkdir "$ODOOMAN_DIR"/manager_mods
 
 # Install dependencies:
-sudo apt update || die
-sudo apt upgrade -y || die
-sudo apt dist-upgrade -y || die
+apt-get update || die
+apt-get upgrade -y || die
+apt-get dist-upgrade -y || die
 
-apt install -y sudo links less openssh-server || die
-apt install -y postgresql postgresql-client || die
-apt install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev || die
-apt install -y zlib1g-dev || die
-apt build-dep -y python3-ldap || die
+apt-get install -y sudo links less openssh-server || die
+apt-get install -y postgresql postgresql-client || die
+apt-get install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev || die
+apt-get install -y zlib1g-dev || die
+apt-get build-dep -y python3-ldap || die
 
 # Install correct wkhtmltopdf version:
 pushd ~
 wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
-sudo dpkg -i wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
-sudo apt --fix-broken install || die
+dpkg -i wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb
+apt-get --fix-broken install || die
 popd
 
+# The following command still get sudo because we want to use the -H flag:
 sudo -H pip3 install --upgrade pip || die
 sudo -H pip3 install --upgrade six pillow python-dateutil pytz || die
 sudo -H pip3 install --ignore-installed pyserial psycopg2-binary || die
@@ -73,7 +74,7 @@ cd "$ODOOMAN_DIR"/
 git clone "$MAIN_GIT_REMOTE_REPO" "$MAIN_GIT_LOCAL_REPO" || die
 
 # Create "$ODOO_USERNAME" user:
-sudo useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
+useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
 
 ######################################
 # Setup Odoo Manager:
