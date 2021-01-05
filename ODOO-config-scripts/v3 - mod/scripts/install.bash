@@ -11,6 +11,16 @@ export SCRIPTCONFIG="$ODOOMAN_DIR"/odooconfig.conf
 export RELEASES_DIR="$ODOOMAN_DIR"/releases
 export ODOO_USERNAME="odoo"
 
+export WKHTMLTOPDF_VERSION="0.12.6-1"
+
+############################
+function die () {
+  local message=$1
+  [ -z "$message" ] && message="Died"
+  echo "$message (at ${BASH_SOURCE[1]}:${FUNCNAME[1]} line ${BASH_LINENO[0]}.)" >&2
+  exit 1
+}
+
 ############################
 if [ "$UID" != 0 ]
 then
@@ -34,31 +44,33 @@ mkdir "$RELEASES_DIR"/
 mkdir "$ODOOMAN_DIR"/manager_mods
 
 # Install dependencies:
-sudo apt update
-sudo apt upgrade -y
-sudo apt dist-upgrade -y
+sudo apt update || die
+sudo apt upgrade -y || die
+sudo apt dist-upgrade -y || die
 
-apt install -y sudo links less openssh-server
-apt install -y postgresql postgresql-client
-apt install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev
-apt install -y zlib1g-dev
-#apt install -y wkhtmltopdf
-apt build-dep -y python3-ldap
+apt install -y sudo links less openssh-server || die
+apt install -y postgresql postgresql-client || die
+apt install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev || die
+apt install -y zlib1g-dev || die
+apt build-dep -y python3-ldap || die
 
-# Generate and prepare a password:
-export ODOO_PASSWORD=`pwgen -c -n 40 1 --secure | tr -d "\n"`
-echo "CONFIG={'DB_PASSWORD': '$ODOO_PASSWORD'}" > "$SCRIPTCONFIG"
+# Install correct wkhtmltopdf version:
+pushd ~
+wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
+sudo dpkg -i wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
+sudo apt --fix-broken install || die
+popd
 
-sudo -H pip3 install --upgrade pip
-sudo -H pip3 install --upgrade six pillow python-dateutil pytz
-sudo -H pip3 install --ignore-installed pyserial psycopg2-binary
-sudo -H pip3 install --upgrade unidecode    # SEPA modules need this.
+sudo -H pip3 install --upgrade pip || die
+sudo -H pip3 install --upgrade six pillow python-dateutil pytz || die
+sudo -H pip3 install --ignore-installed pyserial psycopg2-binary || die
+sudo -H pip3 install --upgrade unidecode || die    # For SEPA modules
 
-sudo -H pip3 install xlrd xlwt pyldap qrcode vobject num2words phonenumbers
+sudo -H pip3 install xlrd xlwt pyldap qrcode vobject num2words phonenumbers || die
 
 # Clone Odoo repository:
 cd "$ODOOMAN_DIR"/
-git clone "$MAIN_GIT_REMOTE_REPO" "$MAIN_GIT_LOCAL_REPO"
+git clone "$MAIN_GIT_REMOTE_REPO" "$MAIN_GIT_LOCAL_REPO" || die
 
 # Create "$ODOO_USERNAME" user:
 sudo useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
@@ -68,12 +80,12 @@ sudo useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
 ######################################
 # Clone the 13 version from the main tree:
 pushd "$MAIN_GIT_LOCAL_REPO"
-git checkout "$ODOOMAN_ODOO_REL"
+git checkout "$ODOOMAN_ODOO_REL" || die
 popd
-git clone --single-branch -b "$ODOOMAN_ODOO_REL" "$MAIN_GIT_LOCAL_REPO" "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL"
+git clone --single-branch -b "$ODOOMAN_ODOO_REL" "$MAIN_GIT_LOCAL_REPO" "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL" || die
 # Install version-specific deps:
 cd "$RELEASES_DIR"/"$ODOOMAN_ODOO_REL"
-sudo -H pip3 install -r requirements.txt
+sudo -H pip3 install -r requirements.txt || die
 
 # Put modules in their place:
 cp -Rv ../manager_mods/* /odoo/manager_mods/
