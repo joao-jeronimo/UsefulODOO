@@ -40,8 +40,9 @@ sudo apt dist-upgrade -y
 
 apt install -y sudo links less openssh-server
 apt install -y postgresql postgresql-client
-apt install -y wkhtmltopdf python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev
+apt install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev
 apt install -y zlib1g-dev
+apt install -y wkhtmltopdf
 apt build-dep -y python3-ldap
 
 # Generate and prepare a password:
