@@ -28,7 +28,7 @@ then
     exit -1
 fi
 
-grep -o -Hnr "deb-src" /etc/apt/sources.list*
+grep -o -Hnr "^ *deb-src" /etc/apt/sources.list* > /dev/null
 if [ "$?" != 0 ]
 then
     echo "Please add source repositories to sources.list file."
@@ -37,41 +37,61 @@ fi
 
 
 # Prepare /odoo/ subdirectories:
-mkdir "$ODOOMAN_DIR"/
-mkdir "$ODOOMAN_DIR"/configs/
-mkdir "$ODOOMAN_DIR"/logs/
-mkdir "$RELEASES_DIR"/
-mkdir "$ODOOMAN_DIR"/manager_mods
+mkdir -p "$ODOOMAN_DIR"/
+mkdir -p "$ODOOMAN_DIR"/install_stages/
+mkdir -p "$ODOOMAN_DIR"/configs/
+mkdir -p "$ODOOMAN_DIR"/logs/
+mkdir -p "$RELEASES_DIR"/
+mkdir -p "$ODOOMAN_DIR"/manager_mods
 
 # Install dependencies:
-apt-get update || die
-apt-get upgrade -y || die
-apt-get dist-upgrade -y || die
+if [ -z "$ODOOMAN_DIR"/install_stages/system_upgraded ]
+then
+    apt-get update || die
+    apt-get upgrade -y || die
+    apt-get dist-upgrade -y || die
+    touch "$ODOOMAN_DIR"/install_stages/system_upgraded
+fi
 
-apt-get install -y sudo links less openssh-server || die
-apt-get install -y postgresql postgresql-client || die
-apt-get install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev || die
-apt-get install -y zlib1g-dev || die
-apt-get build-dep -y python3-ldap || die
+if [ -z "$ODOOMAN_DIR"/install_stages/apt_deps_installed ]
+then
+    apt-get install -y sudo links less openssh-server || die
+    apt-get install -y postgresql postgresql-client || die
+    apt-get install -y python3-pip pwgen git ttf-mscorefonts-installer libpq-dev libjpeg-dev node-less libxml2-dev libxslt-dev || die
+    apt-get install -y zlib1g-dev || die
+    apt-get build-dep -y python3-ldap || die
+    touch "$ODOOMAN_DIR"/install_stages/apt_deps_installed
+fi
 
 # Install correct wkhtmltopdf version:
-pushd ~
-wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
-dpkg -i wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb
-apt-get --fix-broken install || die
-popd
+if [ -z "$ODOOMAN_DIR"/install_stages/wkhtmltopdf_installed ]
+then
+    pushd ~
+    wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb || die
+    dpkg -i wkhtmltox_"$WKHTMLTOPDF_VERSION".focal_amd64.deb
+    apt-get --fix-broken install || die
+    popd
+    tpuch "$ODOOMAN_DIR"/install_stages/wkhtmltopdf_installed
+fi
 
-# The following command still get sudo because we want to use the -H flag:
-sudo -H pip3 install --upgrade pip || die
-sudo -H pip3 install --upgrade six pillow python-dateutil pytz || die
-sudo -H pip3 install --ignore-installed pyserial psycopg2-binary || die
-sudo -H pip3 install --upgrade unidecode || die    # For SEPA modules
+if [ -z "$ODOOMAN_DIR"/install_stages/pip_deps ]
+then
+    # The following command still get sudo because we want to use the -H flag:
+    sudo -H pip3 install --upgrade pip || die
+    sudo -H pip3 install --upgrade six pillow python-dateutil pytz || die
+    sudo -H pip3 install --ignore-installed pyserial psycopg2-binary || die
+    sudo -H pip3 install --upgrade unidecode || die    # For SEPA modules
+    touch "$ODOOMAN_DIR"/install_stages/pip_deps
+fi
 
 sudo -H pip3 install xlrd xlwt pyldap qrcode vobject num2words phonenumbers || die
 
 # Clone Odoo repository:
-cd "$ODOOMAN_DIR"/
-git clone "$MAIN_GIT_REMOTE_REPO" "$MAIN_GIT_LOCAL_REPO" || die
+if [ ! -d "$MAIN_GIT_LOCAL_REPO" ]
+then
+    cd "$ODOOMAN_DIR"/
+    git clone "$MAIN_GIT_REMOTE_REPO" "$MAIN_GIT_LOCAL_REPO" || die
+fi
 
 # Create "$ODOO_USERNAME" user:
 useradd -d "$ODOOMAN_DIR"/ "$ODOO_USERNAME"
