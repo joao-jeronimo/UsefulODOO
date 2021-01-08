@@ -11,7 +11,7 @@ WKHTMLTOPDF_VERSION=0.12.6-1
 ODROOT=/odoo
 MAIN_GIT_REMOTE_REPO=https://github.com/odoo/odoo.git
 ODOO_USERNAME=odoo
-SYSTEMD_PATH=/etc/systemd/system/multi-user.target.wants
+SYSTEMD_PATH=/lib/systemd/system
 
 ############################
 .PHONY: default_target prepare_$(INSTANCENM)
@@ -22,25 +22,11 @@ prepare_$(INSTANCENM):  $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service
 
 $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf
 	@echo "Installing SystemD config file $@..."
-	@cat << EOF > "$@"
-	[Unit]
-	Description=Odoo-instance-$(INSTANCENM)
-	After=network.target
-	
-	[Service]
-	Type=simple
-	User=$(ODOO_USERNAME)
-	Group=$(ODOO_USERNAME)
-	ExecStart=$(ODROOT)/releases/$(ODOO_REL)/odoo-bin --database=$(INSTANCENM) --db-filter="$(INSTANCENM).*" --config /odoo/configs/odoo-$(INSTANCENM).conf --logfile /odoo/logs/odoo-$(INSTANCENM).log
-	KillMode=mixed
-	
-	[Install]
-	WantedBy=multi-user.target
-	EOF
+	sed "s/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(ODROOT:/%=\\/%)/g" template.service > $@
 
-$(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL)
+$(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs
 	@echo "Installing config file $@..."
-	@cat << EOF > "$@"
+	@cat << EOF > $@
 	[options]
 	addons_path = $(ODROOT)/releases/$(ODOO_REL)/addons
 	#admin_passwd =
@@ -98,7 +84,7 @@ $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL)
 	workers = 0
 	EOF
 
-$(ODROOT)/releases/$(ODOO_REL): | $(ODROOT)/odoo-full-git
+$(ODROOT)/releases/$(ODOO_REL): | $(ODROOT)/odoo-full-git $(ODROOT)/releases
 	@echo "Checking out $(ODOO_REL) branch..."
 	@cd $(ODROOT)/odoo-full-git ; git checkout $(ODOO_REL)
 	@cd $(ODROOT)/odoo-full-git ; git pull --all

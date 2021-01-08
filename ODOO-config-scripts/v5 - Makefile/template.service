@@ -1,0 +1,13 @@
+[Unit]
+Description=Odoo-instance-INSTANCENM
+After=network.target
+
+[Service]
+Type=simple
+User=ODOO_USERNAME
+Group=ODOO_USERNAME
+ExecStart=ODROOT/releases/ODOO_REL/odoo-bin --database=INSTANCENM --db-filter="INSTANCENM.*" --config /odoo/configs/odoo-INSTANCENM.conf --logfile /odoo/logs/odoo-INSTANCENM.log
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
