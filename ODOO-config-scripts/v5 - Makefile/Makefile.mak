@@ -99,6 +99,9 @@ $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL)
 	EOF
 
 $(ODROOT)/releases/$(ODOO_REL): | $(ODROOT)/odoo-full-git
+	@echo "Checking out $(ODOO_REL) branch..."
+	@cd $(ODROOT)/odoo-full-git ; git checkout $(ODOO_REL)
+	@cd $(ODROOT)/odoo-full-git ; git pull --all
 	@echo "Fetching $(ODOO_REL) branch..."
 	@git clone -b $(ODOO_REL) --single-branch $(ODROOT)/odoo-full-git $@
 
