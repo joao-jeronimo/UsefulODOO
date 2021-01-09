@@ -5,7 +5,7 @@ INSTANCENM=base13
 HTTPPORT=4013
 
 WKHTMLTOPDF_VERSION=0.12.6-1
-DEBIAN_CODENAME=buster
+DEBIAN_CODENAME=focal
 
 ############################
 ### Constants:
