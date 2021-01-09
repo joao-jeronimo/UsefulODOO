@@ -1,8 +1,8 @@
 ############################
 ### Vars:
-ODOO_REL=14.0
-INSTANCENM=base14
-HTTPPORT=4014
+ODOO_REL=13.0
+INSTANCENM=base13
+HTTPPORT=4013
 
 WKHTMLTOPDF_VERSION=0.12.6-1
 DEBIAN_CODENAME=buster
@@ -27,6 +27,7 @@ $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCE
 	@chown odoo:odoo -Rc /odoo/
 	@chmod ug+rwX -Rc /odoo/
 	@chmod o-rwx -Rc /odoo/
+	@find /odoo/ -type d -exec chmod g+s {} \;
 
 $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/custom_$(ODOO_REL) $(ODROOT)/stages/sql_user_created
 	@echo "Installing config file $@..."
@@ -49,7 +50,7 @@ $(ODROOT)/releases $(ODROOT)/configs $(ODROOT)/logs $(ODROOT)/custom_$(ODOO_REL)
 	mkdir $@
 
 # Permissions config:
-$(ODROOT)/stages/sql_user_created:	| $(ODROOT)/stages
+$(ODROOT)/stages/sql_user_created:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages
 	sudo -u postgres bash -c "createuser -s $(ODOO_USERNAME)"
 	@touch $@
 $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
