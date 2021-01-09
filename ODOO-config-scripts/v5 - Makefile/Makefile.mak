@@ -20,9 +20,10 @@ default_target:	prepare_$(INSTANCENM)
 prepare_$(INSTANCENM):  $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service
 
 
-$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_pip_packages $(ODROOT)/stages/system_user_created
+$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_branch_requirements $(ODROOT)/stages/system_user_created
 	@echo "Installing SystemD config file $@..."
 	@sed "s/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(ODROOT:/%=\\/%)/g" template.service > $@
+	@chown odoo:odoo -Rc /odoo/
 
 $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/custom_$(ODOO_REL) $(ODROOT)/stages/sql_user_created
 	@echo "Installing config file $@..."
@@ -56,9 +57,13 @@ $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
 $(ODROOT)/stages/dep_git_deb:	| $(ODROOT)/stages
 	sudo apt-get install git
 	touch $@
+$(ODROOT)/stages/dep_branch_requirements:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages $(ODROOT)/stages/dep_pip_packages
+	cd $(ODROOT)/releases/$(ODOO_REL) ; sudo -H pip3 install -r requirements.txt
+	touch $@
 $(ODROOT)/stages/dep_pip_packages:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages
 	sudo -H pip3 install --upgrade pip
-	cd $(ODROOT)/releases/$(ODOO_REL) ; sudo -H pip3 install -r requirements.txt
+	sudo -H pip3 install --upgrade six pillow python-dateutil pytz unidecode
+	sudo -H pip3 install --ignore-installed pyserial psycopg2-binary
 	touch $@
 $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages
 	apt-get update
