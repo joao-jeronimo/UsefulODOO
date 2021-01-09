@@ -20,11 +20,11 @@ default_target:	prepare_$(INSTANCENM)
 prepare_$(INSTANCENM):  $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service
 
 
-$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_pip_packages
+$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_pip_packages $(ODROOT)/stages/system_user_created
 	@echo "Installing SystemD config file $@..."
 	@sed "s/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(ODROOT:/%=\\/%)/g" template.service > $@
 
-$(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/custom_$(ODOO_REL)
+$(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/custom_$(ODOO_REL) $(ODROOT)/stages/sql_user_created
 	@echo "Installing config file $@..."
 	@sed "s/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(ODROOT:/%=\\/%)/g;s/HTTPPORT/$(HTTPPORT)/g" template.conf > $@
 
@@ -44,17 +44,22 @@ $(ODROOT):
 $(ODROOT)/releases $(ODROOT)/configs $(ODROOT)/logs $(ODROOT)/custom_$(ODOO_REL) $(ODROOT)/stages:  | $(ODROOT)
 	mkdir $@
 
+# Permissions config:
+$(ODROOT)/stages/sql_user_created:	| $(ODROOT)/stages
+	sudo -u postgres bash -c "createuser -s $(ODOO_USERNAME)"
+	touch $@
+$(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
+	useradd -d $(ODROOT) $(ODOO_USERNAME)
+	touch $@
 
 # System dependencies installation:
 $(ODROOT)/stages/dep_git_deb:	| $(ODROOT)/stages
 	sudo apt-get install git
 	touch $@
-
 $(ODROOT)/stages/dep_pip_packages:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages
 	sudo -H pip3 install --upgrade pip
 	cd $(ODROOT)/releases/$(ODOO_REL) ; sudo -H pip3 install -r requirements.txt
 	touch $@
-
 $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages
 	apt-get update
 	apt-get install -y python3-pip
