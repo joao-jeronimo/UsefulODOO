@@ -20,10 +20,12 @@ default_target:	prepare_$(INSTANCENM)
 prepare_$(INSTANCENM):  $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service
 
 
-$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_branch_requirements $(ODROOT)/stages/system_user_created
+$(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCENM).conf $(ODROOT)/stages/dep_branch_requirements $(ODROOT)/stages/dep_wkhtmltopdf $(ODROOT)/stages/system_user_created
 	@echo "Installing SystemD config file $@..."
 	@sed "s/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(ODROOT:/%=\\/%)/g" template.service > $@
 	@chown odoo:odoo -Rc /odoo/
+	@chmod ug+rwX -Rc /odoo/
+	@chmod o-rwx -Rc /odoo/
 
 $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/custom_$(ODOO_REL) $(ODROOT)/stages/sql_user_created
 	@echo "Installing config file $@..."
@@ -48,23 +50,23 @@ $(ODROOT)/releases $(ODROOT)/configs $(ODROOT)/logs $(ODROOT)/custom_$(ODOO_REL)
 # Permissions config:
 $(ODROOT)/stages/sql_user_created:	| $(ODROOT)/stages
 	sudo -u postgres bash -c "createuser -s $(ODOO_USERNAME)"
-	touch $@
+	@touch $@
 $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
 	useradd -d $(ODROOT) $(ODOO_USERNAME)
-	touch $@
+	@touch $@
 
-# System dependencies installation:
+# Dependencies installation:
 $(ODROOT)/stages/dep_git_deb:	| $(ODROOT)/stages
 	sudo apt-get install git
-	touch $@
+	@touch $@
 $(ODROOT)/stages/dep_branch_requirements:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages $(ODROOT)/stages/dep_pip_packages
 	cd $(ODROOT)/releases/$(ODOO_REL) ; sudo -H pip3 install -r requirements.txt
-	touch $@
+	@touch $@
 $(ODROOT)/stages/dep_pip_packages:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages
 	sudo -H pip3 install --upgrade pip
 	sudo -H pip3 install --upgrade six pillow python-dateutil pytz unidecode
 	sudo -H pip3 install --ignore-installed pyserial psycopg2-binary
-	touch $@
+	@touch $@
 $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages
 	apt-get update
 	apt-get install -y python3-pip
@@ -72,4 +74,9 @@ $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages
 	apt-get install -y ttf-mscorefonts-installer node-less
 	apt-get install -y libpq-dev libjpeg-dev libxml2-dev libxslt-dev zlib1g-dev
 	apt-get build-dep -y python3-ldap
-	touch $@
+	@touch $@
+$(ODROOT)/stages/dep_wkhtmltopdf:	| $(ODROOT)/stages
+	@wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_$(WKHTMLTOPDF_VERSION).focal_amd64.deb -O ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).focal_amd64.deb
+	@dpkg -i ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).focal_amd64.deb || true
+	@apt-get --fix-broken install -y
+	@touch $@
