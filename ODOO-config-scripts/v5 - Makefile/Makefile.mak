@@ -1,3 +1,9 @@
+###############################################
+### Dependencies to run this on Debian/Ubuntu:
+# sudo apt install make git screenie
+### To invoke:
+# sudo make -f Makefile.mak
+
 ############################
 ### Vars:
 ODOO_REL=13.0
