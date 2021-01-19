@@ -1,11 +1,20 @@
 ############################
 ### Vars:
+ifeq ($(ODOO_REL),)
 ODOO_REL=13.0
-INSTANCENM=base13
-HTTPPORT=4013
-
+endif
+ifeq ($(INSTANCENM),)
+INSTANCENM=sidiltestes
+endif
+ifeq ($(HTTPPORT),)
+HTTPPORT=4083
+endif
+ifeq ($(WKHTMLTOPDF_VERSION),)
 WKHTMLTOPDF_VERSION=0.12.6-1
+endif
+ifeq ($(DEBIAN_CODENAME),)
 DEBIAN_CODENAME=focal
+endif
 
 ############################
 ### Constants:
