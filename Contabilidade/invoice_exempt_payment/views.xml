@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">view_account_payment_form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form" />
+        
+        <field name="arch" type="xml">
+            <group name="properties" position="inside">
+				
+				<group string="Partner-dependent accounts" colspan="2" col="1">
+					<field name="product_partner_accounts_ids" nolabel="1">
+						<tree editable="bottom">
+							<field name="product_id" invisible="1" />
+							<field name="partner_id" />
+							<field name="property_account_income_id" />
+							<field name="property_account_expense_id" />
+						</tree>
+					</field>
+				</group>
+				
+			</group>
+        </field>
+    </record>
+-->
+</odoo>
