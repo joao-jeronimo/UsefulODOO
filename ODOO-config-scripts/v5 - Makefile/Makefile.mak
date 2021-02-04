@@ -19,7 +19,7 @@ ifeq ($(WKHTMLTOPDF_VERSION),)
 WKHTMLTOPDF_VERSION=0.12.6-1
 endif
 ifeq ($(DEBIAN_CODENAME),)
-DEBIAN_CODENAME=focal
+DEBIAN_CODENAME=buster
 endif
 
 ############################
@@ -93,7 +93,7 @@ $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages
 	apt-get build-dep -y python3-ldap
 	@touch $@
 $(ODROOT)/stages/dep_wkhtmltopdf:	| $(ODROOT)/stages
-	@wget -c https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb -O ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb
+	@wget -c https://github.com/wkhtmltopdf/packaging/releases/download/$(WKHTMLTOPDF_VERSION)/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb -O ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb
 	@dpkg -i ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb || true
 	@apt-get --fix-broken install -y
 	@touch $@
