@@ -7,19 +7,19 @@
 ############################
 ### Vars:
 ifeq ($(ODOO_REL),)
-ODOO_REL=13.0
+ODOO_REL=14.0
 endif
 ifeq ($(INSTANCENM),)
-INSTANCENM=sidiltestes
+INSTANCENM=recibofr14
 endif
 ifeq ($(HTTPPORT),)
-HTTPPORT=4083
+HTTPPORT=4084
 endif
 ifeq ($(WKHTMLTOPDF_VERSION),)
 WKHTMLTOPDF_VERSION=0.12.6-1
 endif
 ifeq ($(DEBIAN_CODENAME),)
-DEBIAN_CODENAME=buster
+DEBIAN_CODENAME=focal
 endif
 
 ############################
