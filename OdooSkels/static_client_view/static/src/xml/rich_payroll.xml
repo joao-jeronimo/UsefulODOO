@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+    
+    <t t-name="EmptyMainpage">
+        <div class="empty_rich_page">
+            <p>Teste</p>
+            <p>Página de experiencias widget...</p>
+        </div>
+    </t>
+    
+</templates>

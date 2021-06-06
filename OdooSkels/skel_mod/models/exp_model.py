@@ -17,7 +17,7 @@ from odoo import api, fields, models, tools, _
 #import pudb
 
 
-class MyExperienceModuçe(models.Model):
+class MyExperienceModule(models.Model):
     _name = 'my.experience.module'
     
     name = fields.Char()

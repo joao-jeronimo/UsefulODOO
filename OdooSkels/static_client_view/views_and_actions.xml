@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        
+        <template id="assets_backend" name="static_client_view_web_assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/static_client_view/static/src/js/static_client_view.js"/>
+            </xpath>
+        </template>
+        
+        <record id="action_static_client_view" model="ir.actions.client">
+            <field name="name">Static client view</field>
+            <field name="tag">static_client_view</field>
+        </record>
+
+        <menuitem
+            id="menu_action_static_client_view"
+            name="Static client view"
+            parent="hr_payroll_community.menu_hr_payroll_community_root"
+            action="action_static_client_view"
+            sequence="11"
+            />
+        
+    </data>
+</openerp>
