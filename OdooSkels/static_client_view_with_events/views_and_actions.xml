@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        
+        <template id="assets_backend" name="rich_payroll_web_assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/rich_payroll/static/src/js/rich_payroll_widgets.js"/>
+            </xpath>
+        </template>
+        
+        <record id="action_rich_payroll_editor" model="ir.actions.client">
+            <field name="name">Rich Payroll Editor</field>
+            <field name="tag">rich_payroll_editor</field>
+        </record>
+
+        <menuitem
+            id="menu_action_rich_payroll_editor"
+            name="Rich Payroll Editor"
+            parent="hr_payroll_community.menu_hr_payroll_community_root"
+            action="action_rich_payroll_editor"
+            sequence="11"
+            />
+        
+    </data>
+</openerp>
