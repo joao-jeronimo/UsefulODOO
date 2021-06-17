@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+    
+    <t t-name="EmptyMainpage">
+        <div class="empty_rich_page">
+            <p>Teste</p>
+            <p>Página de experiencias widget...</p>
+            <button class="btn btn-secondary js_my_test_button">Botão teste</button>
+            <button class="btn btn-secondary" id="butt_write_garbage">Escrever baboseiras</button>
+            <button class="btn btn-secondary" id="butt_write_dated_garbage">Escrever baboseiras datadas</button>
+            <div id="garbage_box">baboseiras iniciais</div>
+        </div>
+    </t>
+    
+</templates>
