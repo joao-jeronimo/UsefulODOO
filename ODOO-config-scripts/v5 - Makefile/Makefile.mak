@@ -7,13 +7,13 @@
 ############################
 ### Vars:
 ifeq ($(ODOO_REL),)
-ODOO_REL=14.0
+ODOO_REL=15.0
 endif
 ifeq ($(INSTANCENM),)
-INSTANCENM=recibofr14
+INSTANCENM=base15
 endif
 ifeq ($(HTTPPORT),)
-HTTPPORT=4084
+HTTPPORT=4015
 endif
 ifeq ($(WKHTMLTOPDF_VERSION),)
 WKHTMLTOPDF_VERSION=0.12.6-1
@@ -97,3 +97,8 @@ $(ODROOT)/stages/dep_wkhtmltopdf:	| $(ODROOT)/stages
 	@dpkg -i ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb || true
 	@apt-get --fix-broken install -y
 	@touch $@
+
+.PHONY: listports
+listports:
+	grep -Hnr http_port /odoo/configs/
+	grep -Hnr http_port /odoo/configs/ | grep -o [0-9][0-9][0-9][0-9] | sort
