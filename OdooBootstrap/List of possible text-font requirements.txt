@@ -1,0 +1,32 @@
+
+
+
+libfont-afm-perl
+libfontconfig1
+libfontenc1
+libfreetype6
+libgraphite2-3
+libwoff1
+libxfont2
+libxft2
+console-setup
+fontconfig
+fontconfig-config
+fonts-dejavu
+fonts-dejavu-core
+fonts-dejavu-extra
+fonts-droid-fallback
+fonts-noto-mono
+fonts-quicksand
+gsfonts
+kbd
+
+# Falatavam:
+sudo apt install fonts-lato
+
+# Já instaladas:
+xfonts-base
+xfonts-encodings
+xfonts-utils
+xfonts-75dpi
+fonts-liberation
