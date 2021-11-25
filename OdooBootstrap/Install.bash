@@ -13,7 +13,7 @@
 #exit -1
 
 if [ -z "$1" ]; then
-echo "Sintaxe: $0 { base11 | base12 | base13 | base14 | base15 }"
+echo "Sintaxe: $0 { base11 | base12 | base13 | base14 | base15 | base15_ocr }"
 exit -1; fi
 
 export instance_preset_name=$1
@@ -48,7 +48,7 @@ case $instance_preset_name in
   base12)
     export ODOO_REL="12.0"
     export HTTPPORT=4012
-    export INSTANCE_MODFOLDERS=""
+    export INSTANCE_MODFOLDERS="/odoo/$CUSTOM_MODS_DIR/other_mods"
     export PYTHONLIBS_DIR=/odoo/PythonLibs
 	# The commands that the user has to run after bootstrapping Odoo:
     export CHDIR_COMMAND="cd '/odoo/$CUSTOM_MODS_DIR'"
@@ -57,7 +57,7 @@ case $instance_preset_name in
   base13)
     export ODOO_REL="13.0"
     export HTTPPORT=4013
-    export INSTANCE_MODFOLDERS=""
+    export INSTANCE_MODFOLDERS="/odoo/$CUSTOM_MODS_DIR/other_mods"
     export PYTHONLIBS_DIR=/odoo/PythonLibs
 	# The commands that the user has to run after bootstrapping Odoo:
     export CHDIR_COMMAND="cd '/odoo/$CUSTOM_MODS_DIR'"
@@ -66,7 +66,7 @@ case $instance_preset_name in
   base14)
     export ODOO_REL="14.0"
     export HTTPPORT=4014
-    export INSTANCE_MODFOLDERS=""
+    export INSTANCE_MODFOLDERS="/odoo/$CUSTOM_MODS_DIR/other_mods"
     export PYTHONLIBS_DIR=/odoo/PythonLibs
 	# The commands that the user has to run after bootstrapping Odoo:
     export CHDIR_COMMAND="cd '/odoo/$CUSTOM_MODS_DIR'"
@@ -75,7 +75,19 @@ case $instance_preset_name in
   base15)
     export ODOO_REL="15.0"
     export HTTPPORT=4015
-    export INSTANCE_MODFOLDERS=""
+    export INSTANCE_MODFOLDERS="/odoo/$CUSTOM_MODS_DIR/other_mods"
+    export PYTHONLIBS_DIR=/odoo/PythonLibs
+	# The commands that the user has to run after bootstrapping Odoo:
+    export CHDIR_COMMAND="cd '/odoo/$CUSTOM_MODS_DIR'"
+    export SCRIPT_NAME=""
+    ;;
+    
+    
+    
+  base15_ocr)
+    export ODOO_REL="15.0"
+    export HTTPPORT=4093
+    export INSTANCE_MODFOLDERS="/odoo/$CUSTOM_MODS_DIR/other_mods"
     export PYTHONLIBS_DIR=/odoo/PythonLibs
 	# The commands that the user has to run after bootstrapping Odoo:
     export CHDIR_COMMAND="cd '/odoo/$CUSTOM_MODS_DIR'"
