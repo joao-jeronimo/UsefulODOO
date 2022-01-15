@@ -27,8 +27,11 @@ endif
 ifeq ($(INSTANCE_MODFOLDERS),)
 $(error Var INSTANCE_MODFOLDERS not defined.)
 endif
-ifeq ($(PYTHON_VERSION),)
-$(error Var PYTHON_VERSION not defined.)
+ifeq ($(PYTHON_MAJOR_VERSION),)
+$(error Var PYTHON_MAJOR_VERSION not defined.)
+endif
+ifeq ($(PYTHON_MINOR_VERSION),)
+$(error Var PYTHON_MINOR_VERSION not defined.)
 endif
 ifeq ($(PYTHONLIBS_DIR),)
 $(error Var PYTHONLIBS_DIR not defined.)
@@ -56,7 +59,7 @@ ODROOT=/odoo
 MAIN_GIT_REMOTE_REPO=https://github.com/odoo/odoo.git
 ODOO_USERNAME=odoo
 SYSTEMD_PATH=/lib/systemd/system
-VIRTUALENV_NAME=Env_Python$(PYTHON_VERSION)_Odoo$(ODOO_REL)
+VIRTUALENV_NAME=Env_Python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)_Odoo$(ODOO_REL)
 VIRTUALENV_PATH=$(ODROOT)/VirtualEnvs/$(VIRTUALENV_NAME)
 VHOST_NAME=$(INSTANCENM)-sidil
 VHOST_CONFIG_FILE=/etc/nginx/sites-available/$(VHOST_NAME)
@@ -127,11 +130,11 @@ $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
 	@touch $@
 
 $(VIRTUALENV_PATH):
-	sudo apt-get install python3      # python$(PYTHON_VERSION)
-	sudo apt-get install python3-pip python3-venv
+	sudo apt-get install python$(PYTHON_MAJOR_VERSION)
+	sudo apt-get install python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
 	sudo -H pip3 install --upgrade pip
-	#$(VIRTUALENV_BIN) --python=/usr/bin/python$(PYTHON_VERSION) $(VIRTUALENV_PATH)
-	python$(PYTHON_VERSION) -m venv $(VIRTUALENV_PATH)
+	#$(VIRTUALENV_BIN) --python=/usr/bin/python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) $(VIRTUALENV_PATH)
+	python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) -m venv $(VIRTUALENV_PATH)
 
 ##########################################################################
 ### Dependencies installation: ###########################################

@@ -8,7 +8,7 @@ def install_release(c, release_num):
 
 @task
 def call_makefile(c,    odoo_rel, instancenm, httpport, listen_on,
-                        wkhtmltopdf_version, debian_codename, python_version,
+                        wkhtmltopdf_version, debian_codename, python_major_version, python_minor_version,
                         instance_modfolders, pythonlibs_dir):
     # Vars dictionary:
     make_vars = {
@@ -18,7 +18,8 @@ def call_makefile(c,    odoo_rel, instancenm, httpport, listen_on,
         'WKHTMLTOPDF_VERSION'   : wkhtmltopdf_version,
         'LISTEN_ON'             : listen_on,
         'INSTANCE_MODFOLDERS'   : instance_modfolders,
-        'PYTHON_VERSION'        : python_version,
+        'PYTHON_MAJOR_VERSION'  : python_major_version,
+        'PYTHON_MINOR_VERSION'  : python_minor_version,
         'PYTHONLIBS_DIR'        : pythonlibs_dir,
         
         'DEBIAN_CODENAME'       : debian_codename,
