@@ -1,0 +1,2 @@
+invoke call-makefile 13.0 testinvoke13 5000 0.0.0.0 0.12.6-1 buster 3.7 /odoo/custom/xpto /odoo/PythonLibs
+invoke call-makefile 13.0 testinvoke13 5000 0.0.0.0 0.12.6-1 buster 3.7 /odoo/custom/xpto /odoo/PythonLibs
