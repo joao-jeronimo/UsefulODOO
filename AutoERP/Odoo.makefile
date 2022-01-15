@@ -24,9 +24,6 @@ endif
 ifeq ($(WKHTMLTOPDF_VERSION),)
 $(error Var WKHTMLTOPDF_VERSION not defined.)
 endif
-ifeq ($(DEBIAN_CODENAME),)
-$(error Var DEBIAN_CODENAME not defined.)
-endif
 ifeq ($(INSTANCE_MODFOLDERS),)
 $(error Var INSTANCE_MODFOLDERS not defined.)
 endif
@@ -35,6 +32,13 @@ $(error Var PYTHON_VERSION not defined.)
 endif
 ifeq ($(PYTHONLIBS_DIR),)
 $(error Var PYTHONLIBS_DIR not defined.)
+endif
+
+ifeq ($(DISTRO),)
+$(error Var DISTRO not defined.)
+endif
+ifeq ($(DEBIAN_CODENAME),)
+$(error Var DEBIAN_CODENAME not defined.)
 endif
 
 # Example var assignments for bash:
@@ -140,14 +144,12 @@ $(ODROOT)/stages/dep_branch_requirements:	| $(ODROOT)/stages $(ODROOT)/stages/de
 	source $(VIRTUALENV_PATH)/bin/activate && pip3 install --upgrade num2words
 	# Dependencies for the deploy scripts:
 	source $(VIRTUALENV_PATH)/bin/activate && pip3 install pymssql odoo-import-export-client odoo-client-lib ezodf gitpython
-	@touch $@
 $(ODROOT)/stages/dep_pip_packages:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages
 	sudo -H pip3 install --upgrade pip
 	source $(VIRTUALENV_PATH)/bin/activate && pip3 install --upgrade six pillow python-dateutil pytz unidecode xlutils sqlparse
 	source $(VIRTUALENV_PATH)/bin/activate && pip3 install --ignore-installed pyserial
 	# Force install PortgreSQL API (psycopg2) from source:
 	source $(VIRTUALENV_PATH)/bin/activate && pip3 install --ignore-installed --no-binary :all: psycopg2
-	@touch $@
 	
 $(ODROOT)/stages/dep_apt_packages:	| $(ODROOT)/stages/added_deb_repos $(ODROOT)/stages
 	apt-get update
@@ -162,12 +164,20 @@ install-nginx:	| $(ODROOT)/stages/added_deb_repos
 	apt-get update
 	apt-get install -y nginx
 
+ifeq ($(DISTRO),debian)
 $(ODROOT)/stages/added_deb_repos:	| $(ODROOT)/stages
 	apt-get update
 	apt-get install software-properties-common
 	add-apt-repository contrib
 	add-apt-repository non-free
 	@touch $@
+endif
+ifeq ($(DISTRO),ubuntu)
+$(ODROOT)/stages/added_deb_repos:	| $(ODROOT)/stages
+	apt-get update
+	apt-get install software-properties-common
+	@touch $@
+endif
 
 $(ODROOT)/stages/dep_wkhtmltopdf:	| $(ODROOT)/stages $(ODROOT)/stages/system_user_created
 	@wget -c https://github.com/wkhtmltopdf/packaging/releases/download/$(WKHTMLTOPDF_VERSION)/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb -O ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb
