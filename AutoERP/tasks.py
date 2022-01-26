@@ -1,5 +1,6 @@
 import os
 from invoke import task
+#import git
 # Call this file with:
 #invoke --list
 
@@ -7,7 +8,27 @@ def read_manifest(manifest_path):
     with open(manifest_path, "r") as manifile:
         manifcontents = manifile.read()
     return eval(manifcontents)
-    
+
+def create_suite_folders(c, suitename):
+    c.run("mkdir -p "+os.path.join(os.path.sep, "odoo", "Suites", suitename))
+    c.run("mkdir -p "+os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos"))
+
+def fetch_repo_to(c, repospec, destpath):
+    #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
+    c.run("git clone --single-branch -b %s %s %s" % (repospec['branch'], repospec['url'], destpath) )
+
+@task
+def fetch_suite_repos(c, suitename):
+    suitemanifest = suite_info(c, suitename)
+    create_suite_folders(c, suitename)
+    # Fetch the repos:
+    all_suite_repos = suitemanifest['repositories']
+    for this_repo in all_suite_repos:
+        fetch_repo_to (c,
+            this_repo,
+            os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos", this_repo['localname'])
+            )
+
 @task
 def suite_info(c, suitename):
     suitepath = os.path.join("Suites", suitename)
@@ -16,6 +37,7 @@ def suite_info(c, suitename):
         exit(-1)
     manifest_data = read_manifest(os.path.join(suitepath, "__manifest__.py"))
     print(repr(manifest_data))
+    return manifest_data
 
 RELEASE_PYVER = {
     '13.0':         "3.7",
