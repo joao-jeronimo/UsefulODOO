@@ -1,6 +1,21 @@
+import os
 from invoke import task
 # Call this file with:
 #invoke --list
+
+def read_manifest(manifest_path):
+    with open(manifest_path, "r") as manifile:
+        manifcontents = manifile.read()
+    return eval(manifcontents)
+    
+@task
+def suite_info(c, suitename):
+    suitepath = os.path.join("Suites", suitename)
+    if not os.path.isdir(suitepath):
+        print("No such suite: %s"%suitename)
+        exit(-1)
+    manifest_data = read_manifest(os.path.join(suitepath, "__manifest__.py"))
+    print(repr(manifest_data))
 
 @task
 def install_release(c, release_num):
