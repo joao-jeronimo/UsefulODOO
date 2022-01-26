@@ -17,11 +17,37 @@ def suite_info(c, suitename):
     manifest_data = read_manifest(os.path.join(suitepath, "__manifest__.py"))
     print(repr(manifest_data))
 
+RELEASE_PYVER = {
+    '13.0':         "3.7",
+    }
+
+@task
+def create_instance(c, release_num, instancenm, httpport, private=True):
+    if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
+    else:                                   python_version = "3.7"
+    # A list of targets to run:
+    TARGETS_TO_RUN = [
+        "prepare_all",
+        ]
+    # Prepara parameters:
+    makefile_params = dict(
+        instancenm              = instancenm,
+        httpport                = httpport,
+        listen_on               = "127.0.0.1" if private else "0.0.0.0",
+        odoo_rel                = release_num,
+        wkhtmltopdf_version     = "0.12.6-1",
+        debian_codename         = "buster",
+        python_major_version    = python_version.split('.')[0],
+        python_minor_version    = python_version.split('.')[1],
+        instance_modfolders     = "/odoo/custom/xpto",
+        pythonlibs_dir          = "/odoo/PythonLibs",
+        targetname              = " ".join(TARGETS_TO_RUN),
+        )
+    # Run all the needed targets:
+    call_makefile(c, **makefile_params)
+
 @task
 def install_release(c, release_num):
-    RELEASE_PYVER = {
-        '13.0':         "3.7",
-        }
     if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
     else:                                   python_version = "3.7"
     # A list of targets to run:
@@ -45,13 +71,10 @@ def install_release(c, release_num):
         python_minor_version    = python_version.split('.')[1],
         instance_modfolders     = "/odoo/custom/xpto",
         pythonlibs_dir          = "/odoo/PythonLibs",
+        targetname              = " ".join(TARGETS_TO_RUN),
         )
     # Run all the needed targets:
-    for current_target in TARGETS_TO_RUN:
-        call_makefile(c,
-            **makefile_params,
-            targetname = current_target,
-            )
+    call_makefile(c, **makefile_params)
 
 @task
 def call_makefile(c,    odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="8999",
