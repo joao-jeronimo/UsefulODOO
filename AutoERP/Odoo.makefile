@@ -12,37 +12,8 @@
 
 ############################
 ### Vars:
-ifeq ($(ODOO_REL),)
-$(error Var ODOO_REL not defined.)
-endif
-ifeq ($(INSTANCENM),)
-$(error Var INSTANCENM not defined.)
-endif
-ifeq ($(HTTPPORT),)
-$(error Var HTTPPORT not defined.)
-endif
-ifeq ($(WKHTMLTOPDF_VERSION),)
-$(error Var WKHTMLTOPDF_VERSION not defined.)
-endif
-ifeq ($(INSTANCE_MODFOLDERS),)
-$(error Var INSTANCE_MODFOLDERS not defined.)
-endif
-ifeq ($(PYTHON_MAJOR_VERSION),)
-$(error Var PYTHON_MAJOR_VERSION not defined.)
-endif
-ifeq ($(PYTHON_MINOR_VERSION),)
-$(error Var PYTHON_MINOR_VERSION not defined.)
-endif
-ifeq ($(PYTHONLIBS_DIR),)
-$(error Var PYTHONLIBS_DIR not defined.)
-endif
-
-ifeq ($(DISTRO),)
-$(error Var DISTRO not defined.)
-endif
-ifeq ($(DEBIAN_CODENAME),)
-$(error Var DEBIAN_CODENAME not defined.)
-endif
+###	ODOO_REL, INSTANCENM, HTTPPORT, WKHTMLTOPDF_VERSION, INSTANCE_MODFOLDERS,
+###	PYTHON_MAJOR_VERSION, PYTHON_MINOR_VERSION, PYTHONLIBS_DIR, DISTRO, DEBIAN_CODENAME.
 
 # Example var assignments for bash:
 #export ODOO_REL=13.0
