@@ -5,13 +5,23 @@ from pdf2image import convert_from_path, convert_from_bytes
 #sudo -H pip3 install pytesseract pdf2image
 #sudo apt install poppler-utils tesseract-ocr
 
-USE_TEMP_DIR = False
+# This library needs a temporary directory, at least for caching and debugging:
+KNOWN_DIR = "/home/jj/temp_ocr/"
+DEFAULT_DPI     = 100
+
+def deltree(pathnm):
+    if os.path.isfile(pathnm):
+        os.unlink(pathnm)
+    elif os.path.isdir(pathnm):
+        for subitem in os.listdir(pathnm):
+            deltree(os.path.join(pathnm, subitem))
+        os.rmdir(pathnm)
 
 class OCR_PDF_FromMemory:
     tempdir         = False
     workdir_name    = False
     
-    def __init__(self, pdf_data, dpi=200):
+    def __init__(self, pdf_data, dpi=DEFAULT_DPI):
         self.pdf_data = pdf_data
         self.dpi = dpi
         self.__enter__()
@@ -29,11 +39,13 @@ class OCR_PDF_FromMemory:
     
     # Simple set-ups and tear-downs:
     def create_temporary_dir(self):
-        if USE_TEMP_DIR:
+        if not KNOWN_DIR:
             self.tempdir = tempfile.TemporaryDirectory()
             self.workdir_name = self.tempdir.name
         else:
-            self.workdir_name = "/home/jj/temp_ocr/"
+            self.workdir_name = KNOWN_DIR
+            if os.path.exists(self.workdir_name):
+                deltree(self.workdir_name)
             os.mkdir(self.workdir_name)
     
     def cleanup(self):
@@ -67,7 +79,7 @@ class OCR_PDF_FromMemory:
         return recog_bytes
 
 class OCR_PDF_FromFile(OCR_PDF_FromMemory):
-    def __init__(self, pdf_filename, dpi=200):
+    def __init__(self, pdf_filename, dpi=DEFAULT_DPI):
         with open(pdf_filename, "rb") as filehand:
             pdf_data = filehand.read()
         super(OCR_PDF_FromFile, self).__init__(pdf_data, dpi)
