@@ -1,6 +1,6 @@
-import re
+import re, pdb
 
-class PDFPattern:
+class OCRPattern:
     def __init__(self, name, x1, y1, x2, y2, w, h, detection_policy="firstmatch", pattern_detect=None, pattern_regex=None):
         (self.name, self.x1, self.y1, self.x2, self.y2, self.w, self.h, self.detection_policy) = (name, x1, y1, x2, y2, w, h, detection_policy)
         if (pattern_detect is not None and pattern_regex is not None) or (pattern_detect is None and pattern_regex is None):
@@ -9,18 +9,18 @@ class PDFPattern:
             pattern_detect = (lambda text: re.search(pattern_regex, text, flags=0))
         self.pattern_detect = pattern_detect
     
-    def find(scanner):
+    def find(self, scanner):
         valid_matches = []
         (xi, yi) = (0, 0)
-        while self.x1+xi+w <= self.x2:
-            while self.y1+yi+h <= self.y2:
+        while self.x1+xi+self.w <= self.x2:
+            while self.y1+yi+self.h <= self.y2:
                 # Calc coords to detect:
                 detect_x1 = self.x1+xi
                 detect_y1 = self.y1+yi
                 # Try to detect:
-                possible_match = scanner.ocrpdf.extract_text_bybox(1, detect_x1, detect_y1, w, h)
+                possible_match = scanner.ocrpdf.extract_text_bybox(0, detect_x1, detect_y1, self.w, self.h)
                 if self.pattern_detect(possible_match):
-                    valid_matches += possible_match
+                    valid_matches.append(possible_match)
                 # Increment y index var:
                 yi += 1
             # Increment x index var:
@@ -41,7 +41,7 @@ class RigidPDFScanner:
     patterns = {}
     
     def addPattern(self, pattern):
-        patterns[pattern.name] = patterns
+        self.patterns[pattern.name] = pattern
     
     def findPattern(self, name):
-        return patterns[name].find(self)
+        return self.patterns[name].find(self)
