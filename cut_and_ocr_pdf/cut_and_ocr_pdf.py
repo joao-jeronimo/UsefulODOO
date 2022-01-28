@@ -10,6 +10,7 @@ KNOWN_DIR               = "/home/jj/temp_ocr/"
 PAGE_FILENAME_TEMPLATE  = "Page_%03d.jpeg"
 DEBUG                   = True
 DEFAULT_DPI             = 100
+VIRT_COORDS_MAX         = 1000.0
 
 def deltree(pathnm):
     if os.path.isfile(pathnm):
@@ -66,11 +67,24 @@ class OCR_PDF_FromMemory:
     
     # Getters and setters:
     def get_page_dimms(self, page_num):
-        pdb.set_trace()
-        return (0, 0)
+        the_page = self.page_data[page_num]
+        return the_page.size
+    
+    def coord_virt2image(self, iaxe_max, coord):
+        return (float(coord)*VIRT_COORDS_MAX)/float(iaxe_max)
+    
+    def ref_virt2image(self, page_num, x1, x2, y1, y2):
+        page_dims = self.get_page_dimms(page_num)
+        return (
+            self.coord_virt2image(page_dims[0], x1),
+            self.coord_virt2image(page_dims[0], x2),
+            self.coord_virt2image(page_dims[1], y1),
+            self.coord_virt2image(page_dims[1], y2) )
     
     # Juicy methods:
-    def extract_text_bypoints(self, page_num, x1, x2, y1, y2):
+    def extract_text_bypoints(self, page_num, x1, x2, y1, y2, jpeg_coords=False):
+        if not jpeg_coords:
+            (x1, x2, y1, y2) = self.ref_virt2image(page_num, x1, x2, y1, y2)
         the_page = self.page_data[page_num]
         # Cut the page:
         real_dimms = (x1, y1, x2, y2)
