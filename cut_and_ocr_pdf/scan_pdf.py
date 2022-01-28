@@ -77,6 +77,33 @@ class OCRStaticPattern(OCRPattern):
     def validatePattern(self, text, **kwparams):
         return re.search(self.static_parameters['pattern_regex'], text, flags=0)
 
+class OCRIndexedPattern(OCRPattern):
+    def __init__(self, name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy="firstmatch"):
+        super(OCRIndexedPattern, self).__init__(name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy)
+        self.static_parameters.update({
+            #'w':w,'h':h,
+            #'pattern_regex': pattern_regex,
+            })
+    
+    #x1, y1, x2, y2, w, h
+    def getPageNum(self, **kwparams):
+        return super(OCRIndexedPattern, self).getPageNum(**kwparams)
+    def getX1(self, **kwparams):
+        return super(OCRIndexedPattern, self).getX1(**kwparams)
+    def getY1(self, **kwparams):
+        return super(OCRIndexedPattern, self).getY1(**kwparams)
+    def getX2(self, **kwparams):
+        return super(OCRIndexedPattern, self).getX2(**kwparams)
+    def getY2(self, **kwparams):
+        return super(OCRIndexedPattern, self).getY2(**kwparams)
+    def getW(self, **kwparams):
+        return super(OCRIndexedPattern, self).getW(**kwparams)
+    def getH(self, **kwparams):
+        return super(OCRIndexedPattern, self).getH(**kwparams)
+    
+    def validatePattern(self, text, **kwparams):
+        return super(OCRIndexedPattern, self).validatePattern(text, **kwparams)
+
 class RigidPDFScanner:
     def __init__(self, ocrpdf):
         self.ocrpdf = ocrpdf
