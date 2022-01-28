@@ -109,8 +109,8 @@ class OCRStaticPattern(OCRPattern):
         return re.search(self.static_parameters['pattern_regex'], text, flags=0)
 
 class OCRIndexedPattern(OCRStaticPattern):
-    def __init__(self, name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy="firstmatch"):
-        super(OCRIndexedPattern, self).__init__(name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy)
+    def __init__(self, name, pageNum, x1, y1, w, h, pattern_regex, x2=False, y2=False, detectionPolicy="firstmatch"):
+        super(OCRIndexedPattern, self).__init__(name, pageNum, x1, y1, w, h, pattern_regex, x2, y2, detectionPolicy)
         self.static_parameters.update({
             #'w':w,'h':h,
             #'pattern_regex': pattern_regex,
