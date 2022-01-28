@@ -23,17 +23,17 @@ class OCRPattern:
     def validatePattern(self, text, **kwparams):
         raise NotImplementedError()
     
-    def find(self, scanner):
+    def find(self, scanner, **kwparams):
         valid_matches = []
         (xi, yi) = (0, 0)
-        while self.getX1()+xi+self.getW() <= self.getX2():
-            while self.getY1()+yi+self.getH() <= self.getY2():
+        while self.getX1(**kwparams)+xi+self.getW(**kwparams) <= self.getX2(**kwparams):
+            while self.getY1(**kwparams)+yi+self.getH(**kwparams) <= self.getY2(**kwparams):
                 # Calc coords to detect:
-                detect_x1 = self.getX1()+xi
-                detect_y1 = self.getY1()+yi
+                detect_x1 = self.getX1(**kwparams)+xi
+                detect_y1 = self.getY1(**kwparams)+yi
                 # Try to detect:
-                possible_match = scanner.ocrpdf.extract_text_bybox(self.getPageNum(), detect_x1, detect_y1, self.getW(), self.getH())
-                if self.validatePattern(possible_match):
+                possible_match = scanner.ocrpdf.extract_text_bybox(self.getPageNum(**kwparams), detect_x1, detect_y1, self.getW(**kwparams), self.getH(**kwparams))
+                if self.validatePattern(possible_match, **kwparams):
                     valid_matches.append(possible_match)
                 # Increment y index var:
                 yi += 1
@@ -86,5 +86,5 @@ class RigidPDFScanner:
     def addPattern(self, pattern):
         self.patterns[pattern.name] = pattern
     
-    def findPattern(self, name):
-        return self.patterns[name].find(self)
+    def findPattern(self, name, **kwparams):
+        return self.patterns[name].find(self, **kwparams)
