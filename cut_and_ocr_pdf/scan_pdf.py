@@ -71,8 +71,8 @@ class OCRStaticPattern(OCRPattern):
     def __init__(self, name, pageNum, x1, y1, w, h, pattern_regex, x2=False, y2=False, detectionPolicy="firstmatch"):
         super(OCRStaticPattern, self).__init__(name, detectionPolicy)
         # Check argument types:
-        pdb.set_trace()
-        nonnumbers = [ (par, eval(par)) for par in ("x1", "y1", "x2", "y2", "w", "h") if not isinstance(eval(par), numbers.Number) ]
+        methlocals = locals()
+        nonnumbers = [ (par, eval(par, methlocals)) for par in ("x1", "y1", "x2", "y2", "w", "h") if not isinstance(eval(par, methlocals), numbers.Number) ]
         if any(nonnumbers):
             raise TypeError("Arguments %s must be a number, but in reallity it's «%s»" % (nonnumbers[0][0], nonnumbers[0][1], ))
         # Create the static params dictionary:
