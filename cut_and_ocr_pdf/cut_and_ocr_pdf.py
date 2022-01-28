@@ -62,7 +62,7 @@ class OCR_PDF_FromMemory:
             )
         if DEBUG:
             for (pagnum, pagdata) in enumerate(self.page_data):
-                pagdata.save(os.path.join(self.workdir_name, PAGE_FILENAME_TEMPLATE%(pagnum+1)))
+                pagdata.save(os.path.join(self.workdir_name, PAGE_FILENAME_TEMPLATE%(pagnum)))
     
     # Getters and setters:
     def get_page_dimms(self, page_num):
