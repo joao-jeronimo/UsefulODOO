@@ -49,6 +49,7 @@ def create_instance(c, release_num, instancenm, httpport, private=True):
     else:                                   python_version = "3.7"
     # A list of targets to run:
     TARGETS_TO_RUN = [
+        "prepare_virtualenv",
         "prepare_all",
         ]
     # Prepara parameters:

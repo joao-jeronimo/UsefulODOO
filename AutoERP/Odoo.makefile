@@ -101,9 +101,9 @@ $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
 	@touch $@
 
 $(VIRTUALENV_PATH):
-	sudo apt-get install python$(PYTHON_MAJOR_VERSION)
-	sudo apt-get install python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
-	sudo -H pip3 install --upgrade pip
+	sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)
+	sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
+	sudo -H pip3 install -y --upgrade pip
 	#$(VIRTUALENV_BIN) --python=/usr/bin/python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) $(VIRTUALENV_PATH)
 	python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) -m venv $(VIRTUALENV_PATH)
 
@@ -111,7 +111,7 @@ $(VIRTUALENV_PATH):
 ### Dependencies installation: ###########################################
 ##########################################################################
 $(ODROOT)/stages/dep_git_deb:	| $(ODROOT)/stages
-	sudo apt-get install git
+	sudo apt-get install -y git
 	@touch $@
 $(ODROOT)/stages/dep_branch_requirements:	| $(ODROOT)/stages $(ODROOT)/stages/dep_apt_packages $(ODROOT)/stages/dep_pip_packages
 	source $(VIRTUALENV_PATH)/bin/activate && cd $(ODROOT)/releases/$(ODOO_REL) ; pip3 install -r requirements.txt
@@ -141,7 +141,7 @@ install-nginx:	| $(ODROOT)/stages/added_deb_repos
 ifeq ($(DISTRO),debian)
 $(ODROOT)/stages/added_deb_repos:	| $(ODROOT)/stages
 	apt-get update
-	apt-get install software-properties-common
+	apt-get install -y software-properties-common
 	add-apt-repository contrib
 	add-apt-repository non-free
 	@touch $@
@@ -149,7 +149,7 @@ endif
 ifeq ($(DISTRO),ubuntu)
 $(ODROOT)/stages/added_deb_repos:	| $(ODROOT)/stages
 	apt-get update
-	apt-get install software-properties-common
+	apt-get install -y software-properties-common
 	@touch $@
 endif
 
