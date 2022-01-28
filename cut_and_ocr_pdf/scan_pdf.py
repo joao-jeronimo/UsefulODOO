@@ -77,7 +77,7 @@ class OCRStaticPattern(OCRPattern):
     def validatePattern(self, text, **kwparams):
         return re.search(self.static_parameters['pattern_regex'], text, flags=0)
 
-class OCRIndexedPattern(OCRPattern):
+class OCRIndexedPattern(OCRStaticPattern):
     def __init__(self, name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy="firstmatch"):
         super(OCRIndexedPattern, self).__init__(name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy)
         self.static_parameters.update({
