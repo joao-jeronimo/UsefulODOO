@@ -9,7 +9,9 @@ class OCRPattern:
             pattern_detect = (lambda text: re.search(pattern_regex, text, flags=0))
         self.pattern_detect = pattern_detect
     
-    #x1, y1, x2, y2, w, h
+    #pagenum, x1, y1, x2, y2, w, h
+    def getPageNum(self, **kwparams):
+        raise NotImplementedError()
     def getX1(self, **kwparams):
         raise NotImplementedError()
     def getY1(self, **kwparams):
@@ -32,7 +34,7 @@ class OCRPattern:
                 detect_x1 = self.getX1()+xi
                 detect_y1 = self.getY1()+yi
                 # Try to detect:
-                possible_match = scanner.ocrpdf.extract_text_bybox(0, detect_x1, detect_y1, self.getW(), self.getH())
+                possible_match = scanner.ocrpdf.extract_text_bybox(self.getPageNum(), detect_x1, detect_y1, self.getW(), self.getH())
                 if self.pattern_detect(possible_match):
                     valid_matches.append(possible_match)
                 # Increment y index var:
@@ -49,18 +51,21 @@ class OCRPattern:
             raise BaseException("Unknown detection policy %s."%self.detection_policy)
 
 class OCRStaticPattern(OCRPattern):
-    def __init__(self, name, x1, y1, x2, y2, w, h, detection_policy="firstmatch", pattern_detect=None, pattern_regex=None):
+    def __init__(self, name, pageNum, x1, y1, x2, y2, w, h, detection_policy="firstmatch", pattern_detect=None, pattern_regex=None):
         super(OCRStaticPattern, self).__init__(name, detection_policy, pattern_detect, pattern_regex)
         self.static_parameters = {
-            'x1'    : x1,
-            'y1'    : y1,
-            'x2'    : x2,
-            'y2'    : y2,
-            'w'     : w,
-            'h'     : h,
+            'pageNum'   : pageNum,
+            'x1'        : x1,
+            'y1'        : y1,
+            'x2'        : x2,
+            'y2'        : y2,
+            'w'         : w,
+            'h'         : h,
             }
     
     #x1, y1, x2, y2, w, h
+    def getPageNum(self, **kwparams):
+        return self.static_parameters['pageNum']
     def getX1(self, **kwparams):
         return self.static_parameters['x1']
     def getY1(self, **kwparams):
