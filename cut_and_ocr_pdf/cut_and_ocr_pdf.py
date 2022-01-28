@@ -73,18 +73,18 @@ class OCR_PDF_FromMemory:
     def coord_virt2image(self, iaxe_max, coord):
         return (float(coord)*VIRT_COORDS_MAX)/float(iaxe_max)
     
-    def ref_virt2image(self, page_num, x1, x2, y1, y2):
+    def ref_virt2image(self, page_num, x1, y1, x2, y2):
         page_dims = self.get_page_dimms(page_num)
         return (
             self.coord_virt2image(page_dims[0], x1),
-            self.coord_virt2image(page_dims[0], x2),
             self.coord_virt2image(page_dims[1], y1),
+            self.coord_virt2image(page_dims[0], x2),
             self.coord_virt2image(page_dims[1], y2) )
     
     # Juicy methods:
-    def extract_text_bypoints(self, page_num, x1, x2, y1, y2, jpeg_coords=False):
+    def extract_text_bypoints(self, page_num, x1, y1, x2, y2, jpeg_coords=False):
         if not jpeg_coords:
-            (x1, x2, y1, y2) = self.ref_virt2image(page_num, x1, x2, y1, y2)
+            (x1, y1, x2, y2) = self.ref_virt2image(page_num, x1, y1, x2, y2)
         the_page = self.page_data[page_num]
         # Cut the page:
         real_dimms = (x1, y1, x2, y2)
@@ -101,8 +101,8 @@ class OCR_PDF_FromMemory:
         return self.extract_text_bypoints(
             page_num,
             x1 = x1,
-            x2 = x1+w,
             y1 = y1,
+            x2 = x1+w,
             y2 = y1+h)
 
 class OCR_PDF_FromFile(OCR_PDF_FromMemory):
