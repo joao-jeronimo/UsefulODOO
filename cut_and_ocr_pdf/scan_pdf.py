@@ -48,6 +48,32 @@ class OCRPattern:
         else:
             raise BaseException("Unknown detection policy %s."%self.detection_policy)
 
+class OCRStaticPattern(OCRPattern):
+    def __init__(self, name, x1, y1, x2, y2, w, h, detection_policy="firstmatch", pattern_detect=None, pattern_regex=None):
+        super(OCRStaticPattern, self).__init__(name, detection_policy, pattern_detect, pattern_regex)
+        self.static_parameters = {
+            'x1'    : x1,
+            'y1'    : y1,
+            'x2'    : x2,
+            'y2'    : y2,
+            'w'     : w,
+            'h'     : h,
+            }
+    
+    #x1, y1, x2, y2, w, h
+    def getX1(self, **kwparams):
+        return self.static_parameters['x1']
+    def getY1(self, **kwparams):
+        return self.static_parameters['y1']
+    def getX2(self, **kwparams):
+        return self.static_parameters['x2']
+    def getY2(self, **kwparams):
+        return self.static_parameters['y2']
+    def getW(self, **kwparams):
+        return self.static_parameters['w']
+    def getH(self, **kwparams):
+        return self.static_parameters['h']
+
 class RigidPDFScanner:
     def __init__(self, ocrpdf):
         self.ocrpdf = ocrpdf
