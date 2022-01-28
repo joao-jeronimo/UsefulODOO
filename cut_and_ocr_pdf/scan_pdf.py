@@ -1,4 +1,11 @@
-import re, pdb
+import re, pdb, numbers
+
+class ScanWindowTooSmallError(BaseException):
+    def __init__(self, x1, y1, x2, y2, w, h):
+        (self.x1, self.y1, self.x2, self.y2, self.w, self.h) = (x1, y1, x2, y2, w, h)
+        #pdb.set_trace()
+        super(BaseException, self).__init__(
+            "The OCR pattern scan window is too small for the pattern size: x1=%f, y1=%f, x2=%f, y2=%f, w=%f, h=%f" % (x1, y1, x2, y2, w, h))
 
 class OCRPattern:
     def __init__(self, name, detectionPolicy="firstmatch"):
@@ -12,9 +19,9 @@ class OCRPattern:
     def getY1(self, **kwparams):
         raise NotImplementedError()
     def getX2(self, **kwparams):
-        raise NotImplementedError()
+        return self.getX1(**kwparams) + self.getW(**kwparams)
     def getY2(self, **kwparams):
-        raise NotImplementedError()
+        return self.getY1(**kwparams) + self.getH(**kwparams)
     def getW(self, **kwparams):
         raise NotImplementedError()
     def getH(self, **kwparams):
@@ -26,8 +33,10 @@ class OCRPattern:
     def find(self, scanner, **kwparams):
         valid_matches = []
         (xi, yi) = (0, 0)
+        searched = False
         while self.getX1(**kwparams)+xi+self.getW(**kwparams) <= self.getX2(**kwparams):
             while self.getY1(**kwparams)+yi+self.getH(**kwparams) <= self.getY2(**kwparams):
+                searched = True
                 # Calc coords to detect:
                 detect_x1 = self.getX1(**kwparams)+xi
                 detect_y1 = self.getY1(**kwparams)+yi
@@ -39,6 +48,16 @@ class OCRPattern:
                 yi += 1
             # Increment x index var:
             xi += 1
+        # Make sure that the OCR ran at least once:
+        if not searched:
+            raise ScanWindowTooSmallError(
+                    x1 = self.getX1(**kwparams),
+                    y1 = self.getY1(**kwparams),
+                    x2 = self.getX2(**kwparams),
+                    y2 = self.getY2(**kwparams),
+                    w  = self.getW(**kwparams),
+                    h  = self.getH(**kwparams),
+                    )
         # Return the longest match:
         if  self.detectionPolicy == "firstmatch":
             return valid_matches[0]
@@ -49,8 +68,14 @@ class OCRPattern:
             raise BaseException("Unknown detection policy %s."%self.detectionPolicy)
 
 class OCRStaticPattern(OCRPattern):
-    def __init__(self, name, pageNum, x1, y1, x2, y2, w, h, pattern_regex, detectionPolicy="firstmatch"):
+    def __init__(self, name, pageNum, x1, y1, w, h, pattern_regex, x2=False, y2=False, detectionPolicy="firstmatch"):
         super(OCRStaticPattern, self).__init__(name, detectionPolicy)
+        # Check argument types:
+        pdb.set_trace()
+        nonnumbers = [ (par, eval(par)) for par in ("x1", "y1", "x2", "y2", "w", "h") if not isinstance(eval(par), numbers.Number) ]
+        if any(nonnumbers):
+            raise TypeError("Arguments %s must be a number, but in reallity it's «%s»" % (nonnumbers[0][0], nonnumbers[0][1], ))
+        # Create the static params dictionary:
         self.static_parameters = {
             'pageNum': pageNum,
             'x1':x1,'y1':y1,'x2':x2,'y2':y2,
@@ -66,9 +91,15 @@ class OCRStaticPattern(OCRPattern):
     def getY1(self, **kwparams):
         return self.static_parameters['y1']
     def getX2(self, **kwparams):
-        return self.static_parameters['x2']
+        if self.static_parameters['x2']:
+            return self.static_parameters['x2']
+        else:
+            return super(OCRStaticPattern, self).getX2(**kwparams)
     def getY2(self, **kwparams):
-        return self.static_parameters['y2']
+        if self.static_parameters['y2']:
+            return self.static_parameters['y2']
+        else:
+            return super(OCRStaticPattern, self).getY2(**kwparams)
     def getW(self, **kwparams):
         return self.static_parameters['w']
     def getH(self, **kwparams):
