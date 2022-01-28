@@ -6,8 +6,10 @@ from pdf2image import convert_from_path, convert_from_bytes
 #sudo apt install poppler-utils tesseract-ocr
 
 # This library needs a temporary directory, at least for caching and debugging:
-KNOWN_DIR = "/home/jj/temp_ocr/"
-DEFAULT_DPI     = 100
+KNOWN_DIR               = "/home/jj/temp_ocr/"
+PAGE_FILENAME_TEMPLATE  = "Page_%03d.jpeg"
+DEBUG                   = True
+DEFAULT_DPI             = 100
 
 def deltree(pathnm):
     if os.path.isfile(pathnm):
@@ -58,6 +60,9 @@ class OCR_PDF_FromMemory:
             self.pdf_data,
             dpi=self.dpi,
             )
+        if DEBUG:
+            for (pagnum, pagdata) in enumerate(self.page_data):
+                pagdata.save(os.path.join(self.workdir_name, PAGE_FILENAME_TEMPLATE%(pagnum+1)))
     
     # Getters and setters:
     def get_page_dimms(self, page_num):
@@ -65,10 +70,10 @@ class OCR_PDF_FromMemory:
         return (0, 0)
     
     # Juicy methods:
-    def extract_text(self, page_num, x1, y1, w, h):
+    def extract_text_bypoints(self, page_num, x1, x2, y1, y2):
         the_page = self.page_data[page_num]
         # Cut the page:
-        real_dimms = (x1, y1, x1+w, y1+h)
+        real_dimms = (x1, y1, x2, y2)
         region = the_page.crop(real_dimms)
         region_filename = os.path.join(
             self.workdir_name,
@@ -77,6 +82,14 @@ class OCR_PDF_FromMemory:
         # Recognize characters and retur them:
         recog_bytes = pytesseract.image_to_string(region_filename)
         return recog_bytes
+    
+    def extract_text_bybox(self, page_num, x1, y1, w, h):
+        return self.extract_text_bypoints(
+            page_num,
+            x1 = x1,
+            x2 = x1+w,
+            y1 = y1,
+            y2 = y1+h)
 
 class OCR_PDF_FromFile(OCR_PDF_FromMemory):
     def __init__(self, pdf_filename, dpi=DEFAULT_DPI):
