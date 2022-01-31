@@ -122,25 +122,40 @@ class OCRIndexedPattern(OCRStaticPattern):
             pattern_regex,
             default_x2, default_y2,
             detectionPolicy)
+        self.nonDefaultParams = nonDefaultParams
         self.static_parameters.update({
-            #'w':w,'h':h,
-            #'pattern_regex': pattern_regex,
+            'lineSpacing':      lineSpacing,
+            'maxLinesPerPage':  default_maxLinesPerPage
             })
     
+    def calcLinesOnPage(self, pageNum):
+        return self.default_maxLinesPerPage
+    def calcPageX1(self, pageNum):
+        return super(OCRIndexedPattern, self).getX1()
+    def calcPageY1(self, pageNum):
+        return super(OCRIndexedPattern, self).getY1()
+    
     #x1, y1, x2, y2, w, h
-    def getPageNum(self, **kwparams):
+    def getPageNum(self, index, **kwparams):
         return super(OCRIndexedPattern, self).getPageNum(**kwparams)
-    def getX1(self, **kwparams):
-        return super(OCRIndexedPattern, self).getX1(**kwparams)
-    def getY1(self, **kwparams):
-        return super(OCRIndexedPattern, self).getY1(**kwparams)
-    def getX2(self, **kwparams):
-        return super(OCRIndexedPattern, self).getX2(**kwparams)
-    def getY2(self, **kwparams):
-        return super(OCRIndexedPattern, self).getY2(**kwparams)
-    def getW(self, **kwparams):
+    
+    def getX1(self, index, **kwparams):
+        pageNum = self.getPageNum(index)
+        effectiveX1 = self.calcPageX1(pageNum)
+        return effectiveX1
+    
+    def getY1(self, index, **kwparams):
+        pageNum = self.getPageNum(index)
+        effectiveY1 = self.calcPageY1(pageNum) + self.static_parameters['lineSpacing']*index
+        return effectiveY1
+    
+    def getX2(self, index, **kwparams):
+        return super(OCRIndexedPattern, self).getX2(index=index, **kwparams)
+    def getY2(self, index, **kwparams):
+        return super(OCRIndexedPattern, self).getY2(index=index, **kwparams)
+    def getW(self, index, **kwparams):
         return super(OCRIndexedPattern, self).getW(**kwparams)
-    def getH(self, **kwparams):
+    def getH(self, index, **kwparams):
         return super(OCRIndexedPattern, self).getH(**kwparams)
     
     def validatePattern(self, text, **kwparams):
