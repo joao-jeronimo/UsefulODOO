@@ -109,8 +109,19 @@ class OCRStaticPattern(OCRPattern):
         return re.search(self.static_parameters['pattern_regex'], text, flags=0)
 
 class OCRIndexedPattern(OCRStaticPattern):
-    def __init__(self, name, pageNum, x1, y1, w, h, pattern_regex, x2=False, y2=False, detectionPolicy="firstmatch"):
-        super(OCRIndexedPattern, self).__init__(name, pageNum, x1, y1, w, h, pattern_regex, x2, y2, detectionPolicy)
+    def __init__(self, name, firstPageNum,
+                 default_x1, default_y1, default_w, default_h,
+                 nonDefaultParams,
+                 lineSpacing,
+                 default_maxLinesPerPage,
+                 pattern_regex,
+                 default_x2=False, default_y2=False, detectionPolicy="firstmatch"):
+        super(OCRIndexedPattern, self).__init__(name,
+            firstPageNum,
+            default_x1, default_y1, default_w, default_h,
+            pattern_regex,
+            default_x2, default_y2,
+            detectionPolicy)
         self.static_parameters.update({
             #'w':w,'h':h,
             #'pattern_regex': pattern_regex,
@@ -145,4 +156,4 @@ class RigidPDFScanner:
         self.patterns[pattern.name] = pattern
     
     def findPattern(self, name, **kwparams):
-        return self.patterns[name].find(self, **kwparams)
+        return self.patterns[name].find(self, **kwparams).strip()
