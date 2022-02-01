@@ -73,12 +73,12 @@ class OCR_PDF_FromMemory:
         return dimms
     
     def coord_virt2image(self, iaxe_max, coord):
-        print("coord_virt2image(%s, %s) = (float(%s)*%s)/float(%s) = %s" % (
+        print("coord_virt2image(%s, %s) = (float(%s)*float(%s))/%s = %s" % (
             str(iaxe_max), str(coord),
-            coord, VIRT_COORDS_MAX, iaxe_max,
-            (float(coord)*VIRT_COORDS_MAX)/float(iaxe_max)
+            coord, iaxe_max, VIRT_COORDS_MAX,
+            (float(coord)*float(iaxe_max))/VIRT_COORDS_MAX
             ))
-        return (float(coord)*VIRT_COORDS_MAX)/float(iaxe_max)
+        return (float(coord)*float(iaxe_max))/VIRT_COORDS_MAX
     
     def ref_virt2image(self, page_num, x1, y1, x2, y2):
         page_dims = self.get_page_dimms(page_num)

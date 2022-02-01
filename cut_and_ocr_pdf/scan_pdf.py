@@ -112,9 +112,9 @@ class OCRIndexedPattern(OCRStaticPattern):
     def __init__(self, name, firstPageNum,
                  default_x1, default_y1, default_w, default_h,
                  nonDefaultParams,
-                 lineSpacing,
                  default_maxLinesPerPage,
                  pattern_regex,
+                 lineSpacing=False,
                  default_x2=False, default_y2=False, detectionPolicy="firstmatch"):
         super(OCRIndexedPattern, self).__init__(name,
             firstPageNum,
@@ -124,7 +124,7 @@ class OCRIndexedPattern(OCRStaticPattern):
             detectionPolicy)
         self.nonDefaultParams = nonDefaultParams
         self.static_parameters.update({
-            'lineSpacing':      lineSpacing,
+            'lineSpacing':      lineSpacing or default_h,
             'maxLinesPerPage':  default_maxLinesPerPage
             })
     
