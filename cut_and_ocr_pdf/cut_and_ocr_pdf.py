@@ -103,7 +103,12 @@ class OCR_PDF_FromMemory:
             "pag%d_%d_%d_%d_%d.jpg" % ((page_num,)+real_dimms) )
         region.save(region_filename, 'JPEG')
         # Recognize characters and retur them:
-        recog_bytes = pytesseract.image_to_string(region_filename)
+        recog_bytes = pytesseract.image_to_string(
+            region_filename,
+            # Argument «--psm 7» means to treat the image as a
+            # single line (see TesseractOCR manpage).
+            config = "--psm 7",
+            )
         return recog_bytes
     
     def extract_text_bybox(self, page_num, x1, y1, w, h):
