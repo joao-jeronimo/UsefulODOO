@@ -1,4 +1,5 @@
 import re, pdb, numbers
+from .cut_and_ocr_pdf import VIRT_COORDS_MAX
 
 class ScanWindowTooSmallError(BaseException):
     def __init__(self, x1, y1, x2, y2, w, h):
@@ -30,7 +31,28 @@ class OCRPattern:
     def validatePattern(self, text, **kwparams):
         raise NotImplementedError()
     
+    def patternMayExist(self, scanner, **kwparams):
+        pageNum = self.getPageNum(**kwparams)
+        # See if underlying document has this page:
+        if pageNum >= len(scanner.ocrpdf.page_data):
+            return False
+        # See if coordinates are inside page:
+        if not (0.0 <= self.getX1(**kwparams) <= VIRT_COORDS_MAX):
+            return False
+        if not (0.0 <= self.getY1(**kwparams) <= VIRT_COORDS_MAX):
+            return False
+        if not (0.0 <= self.getX2(**kwparams) <= VIRT_COORDS_MAX):
+            return False
+        if not (0.0 <= self.getY2(**kwparams) <= VIRT_COORDS_MAX):
+            return False
+        # If all tests pass, return True:
+        return True
+    
     def find(self, scanner, **kwparams):
+        # See if the pattern may exist:
+        if not self.patternMayExist(scanner, **kwparams):
+            return False
+        # Get valid matches on underlying document:
         valid_matches = []
         (xi, yi) = (0, 0)
         searched = False
@@ -58,6 +80,9 @@ class OCRPattern:
                     w  = self.getW(**kwparams),
                     h  = self.getH(**kwparams),
                     )
+        # Retrun False if no metch found:
+        if not any(valid_matches):
+            return False
         # Return the longest match:
         if  self.detectionPolicy == "firstmatch":
             return valid_matches[0]
@@ -137,7 +162,10 @@ class OCRIndexedPattern(OCRStaticPattern):
     
     #x1, y1, x2, y2, w, h
     def getPageNum(self, index, **kwparams):
-        return super(OCRIndexedPattern, self).getPageNum(**kwparams)
+        return (
+            super(OCRIndexedPattern, self).getPageNum(**kwparams)
+            + int(index / self.static_parameters['maxLinesPerPage'])
+            )
     
     def getX1(self, index, **kwparams):
         pageNum = self.getPageNum(index)
@@ -171,4 +199,5 @@ class RigidPDFScanner:
         self.patterns[pattern.name] = pattern
     
     def findPattern(self, name, **kwparams):
-        return self.patterns[name].find(self, **kwparams).strip()
+        detected = self.patterns[name].find(self, **kwparams)
+        return detected and detected.strip()
