@@ -71,7 +71,7 @@ def create_instance(c, release_num, instancenm, httpport, private=True):
         debian_codename         = "buster",
         python_major_version    = python_version.split('.')[0],
         python_minor_version    = python_version.split('.')[1],
-        instance_modfolders     = "/odoo/custom/xpto",
+        instance_modfolders     = "/odoo/custom/",
         pythonlibs_dir          = "/odoo/PythonLibs",
         targetname              = " ".join(TARGETS_TO_RUN),
         )
@@ -101,7 +101,7 @@ def install_release(c, release_num):
         debian_codename         = "buster",
         python_major_version    = python_version.split('.')[0],
         python_minor_version    = python_version.split('.')[1],
-        instance_modfolders     = "/odoo/custom/xpto",
+        instance_modfolders     = "/odoo/custom/",
         pythonlibs_dir          = "/odoo/PythonLibs",
         targetname              = " ".join(TARGETS_TO_RUN),
         )
