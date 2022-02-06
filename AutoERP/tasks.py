@@ -19,6 +19,9 @@ def fetch_repo_to(c, repospec, destpath):
 
 @task
 def fetch_suite_repos(c, suitename):
+    """
+    ** Pass 2  - Call this after creating the instance.
+    """
     suitemanifest = suite_info(c, suitename)
     create_suite_folders(c, suitename)
     # Fetch the repos:
@@ -31,6 +34,9 @@ def fetch_suite_repos(c, suitename):
 
 @task
 def suite_info(c, suitename):
+    """
+    Print information about a suite.
+    """
     suitepath = os.path.join("Suites", suitename)
     if not os.path.isdir(suitepath):
         print("No such suite: %s"%suitename)
@@ -45,6 +51,9 @@ RELEASE_PYVER = {
 
 @task
 def create_instance(c, release_num, instancenm, httpport, private=True):
+    """
+    ** Pass 1  - Call this forst, then fetch_suite_repos
+    """
     if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
     else:                                   python_version = "3.7"
     # A list of targets to run:
