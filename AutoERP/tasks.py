@@ -1,5 +1,6 @@
 import os
 from invoke import task
+import autoerp_lib
 #import git
 # Call this file with:
 #invoke --list
@@ -145,3 +146,9 @@ def prepare_virtualenv(c, python_version="3.7"):
         python_minor_version    = python_version.split('.')[1],
         targetname              = "prepare_virtualenv",
         )
+
+@task
+def get_instance_config(self, instancenm):
+    inst = autoerp_lib.OdooInstance(instancenm)
+    print( repr( inst.get_http_port() ) )
+    
