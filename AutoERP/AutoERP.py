@@ -180,28 +180,24 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Auto ERP - An installer for Odoo.')
     # Operating modes are subparsers:
     subparsers  = parser.add_subparsers()
-    print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
+    #print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
     for opmode in ALL_OPER_MODES:
-        this_parser = subparsers.add_parser(
-            opmode[0],
-            )
+        this_parser = subparsers.add_parser(opmode[0])
+        this_parser.add_argument("number", type=int)
         
-        pos_arg_spec = (
-            opmode[0],
-            )
-        kw_arg_spec = dict(
-            #dest        = opmode[0],
-            #required    = False,
-            #default     = None,
-            
-            action      = 'store_const',
-            const       = opmode[1],
-            help        = opmode[2],
-            )
-        #print("Adding operating mode: %s %s" % ( repr(pos_arg_spec), repr(kw_arg_spec), ) )
-        this_parser.add_argument(*pos_arg_spec, **kw_arg_spec)
+        #kw_arg_spec = dict(
+        #    #name       = opmode[0],
+        #    #dest        = opmode[0],
+        #    #required    = False,
+        #    #default     = None,
+        #    
+        #    #action      = 'store_const',
+        #    const       = opmode[1],
+        #    help        = opmode[2],
+        #    )
+        #print("Adding operating mode: %s" % ( repr(kw_arg_spec), ) )
         
-        args = parser.parse_args()
-        #print(args)
+    args = parser.parse_args()
+    print(args)
 
 if __name__ == "__main__": main(sys.argv)
