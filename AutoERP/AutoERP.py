@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys, os, argparse, subprocess
+import sys, os, argparse, subprocess, inspect
 import autoerp_lib
 
 ALL_OPER_MODES = []
 def opermode(func):
+    # Subcommand name:
+    subcommand_name = func.__name__.replace('_', '-')
+    # Build a parser for this subcommand:
+    function_args = list(inspect.signature(func).parameters)
+    subparser_args = []
+    for this_arg in function_args:
+        subparser_args.append(
+            dict(
+                #name       = opmode[0],
+                #dest        = opmode[0],
+                #required    = False,
+                #default     = None,
+                
+                dest        = this_arg,
+                action      = 'store',
+                type        = str,
+                #action      = 'store_const',
+                #const       = opmode[1],
+                #help        = opmode[2],
+                ) )
+    # Add command to list:
     ALL_OPER_MODES.append(
-        (func.__name__.replace('_', '-'), func, func.__doc__, )
+        (subcommand_name, func, func.__doc__, subparser_args, )
         )
     return func
 
@@ -183,7 +204,10 @@ def main(argv):
     #print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
     for opmode in ALL_OPER_MODES:
         this_parser = subparsers.add_parser(opmode[0])
-        this_parser.add_argument("number", type=int)
+        for this_arg in opmode[3]:
+            this_parser.add_argument(**this_arg)
+        
+        #this_parser.add_argument("number", type=int)
         
         #kw_arg_spec = dict(
         #    #name       = opmode[0],
