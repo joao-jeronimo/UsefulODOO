@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 from invoke import task
 import autoerp_lib
 #import git
@@ -11,12 +11,28 @@ def read_manifest(manifest_path):
     return eval(manifcontents)
 
 def create_suite_folders(c, suitename):
-    c.run("mkdir -p "+os.path.join(os.path.sep, "odoo", "Suites", suitename))
-    c.run("mkdir -p "+os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos"))
+    subprocess.check_output([
+        "mkdir",
+        "-p",
+        os.path.join(os.path.sep, "odoo", "Suites", suitename),
+        ])
+    subprocess.check_output([
+        "mkdir",
+        "-p",
+        os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos"),
+        ])
 
 def fetch_repo_to(c, repospec, destpath):
     #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
-    c.run("git clone --single-branch -b %s %s %s" % (repospec['branch'], repospec['url'], destpath) )
+    subprocess.check_output([
+        "git",
+        "clone",
+        "--single-branch",
+        "-b",
+        repospec['branch'],
+        repospec['url'],
+        destpath,
+        ])
 
 @task
 def fetch_suite_repos(c, suitename):
@@ -53,7 +69,7 @@ RELEASE_PYVER = {
 @task
 def create_instance(c, release_num, instancenm, httpport, private=True):
     """
-    ** Pass 1  - Call this forst, then fetch_suite_repos
+    ** Pass 1  - Call this first, then fetch_suite_repos
     """
     if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
     else:                                   python_version = "3.7"
@@ -74,7 +90,7 @@ def create_instance(c, release_num, instancenm, httpport, private=True):
         python_minor_version    = python_version.split('.')[1],
         instance_modfolders     = "/odoo/custom/",
         pythonlibs_dir          = "/odoo/PythonLibs",
-        targetname              = " ".join(TARGETS_TO_RUN),
+        targetnames             = " ".join(TARGETS_TO_RUN),
         )
     # Run all the needed targets:
     call_makefile(c, **makefile_params)
@@ -104,7 +120,7 @@ def install_release(c, release_num):
         python_minor_version    = python_version.split('.')[1],
         instance_modfolders     = "/odoo/custom/",
         pythonlibs_dir          = "/odoo/PythonLibs",
-        targetname              = " ".join(TARGETS_TO_RUN),
+        targetnames              = " ".join(TARGETS_TO_RUN),
         )
     # Run all the needed targets:
     call_makefile(c, **makefile_params)
@@ -113,7 +129,7 @@ def install_release(c, release_num):
 def call_makefile(c,    odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="8999",
                         wkhtmltopdf_version="0.12.6-1", debian_codename="buster", python_major_version="3", python_minor_version="7",
                         instance_modfolders="", pythonlibs_dir="",
-                        targetname="prepare_all" ):
+                        targetnames="prepare_all" ):
     # Vars dictionary:
     make_vars = {
         'ODOO_REL'              : odoo_rel,
@@ -132,19 +148,21 @@ def call_makefile(c,    odoo_rel="", instancenm="", listen_on="0.0.0.0", httppor
     # Convert dictionary to arguments:
     make_vars_list = ",".join(make_vars.keys())
     # Do call the makefile:
-    c.run(  'sudo --preserve-env=%(make_vars_list)s make -f Odoo.makefile %(targetname)s' % {
-                    'make_vars_list':   make_vars_list,
-                    'targetname':       targetname,
-                    },
-            env = make_vars,
-            )
+    subprocess.check_output([
+        "sudo",
+        "--preserve-env=%(make_vars_list)s" % { 'make_vars_list':   make_vars_list, },
+        "make", "-f", "Odoo.makefile",
+        *( targetnames.split(" ") ),
+        ],
+        env = make_vars,
+        )
 
 @task
 def prepare_virtualenv(c, python_version="3.7"):
     call_makefile(c,
         python_major_version    = python_version.split('.')[0],
         python_minor_version    = python_version.split('.')[1],
-        targetname              = "prepare_virtualenv",
+        targetnames              = "prepare_virtualenv",
         )
 
 @task

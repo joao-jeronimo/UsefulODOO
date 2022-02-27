@@ -103,7 +103,7 @@ $(ODROOT)/stages/system_user_created:	| $(ODROOT)/stages
 $(VIRTUALENV_PATH):
 	sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)
 	sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
-	sudo -H pip3 install -y --upgrade pip
+	sudo -H pip3 install --upgrade pip
 	#$(VIRTUALENV_BIN) --python=/usr/bin/python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) $(VIRTUALENV_PATH)
 	python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION) -m venv $(VIRTUALENV_PATH)
 
