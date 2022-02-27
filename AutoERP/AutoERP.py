@@ -178,10 +178,14 @@ def get_instance_config(self, instancenm):
 def main(argv):
     # See: https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Auto ERP - An installer for Odoo.')
-    # Operating modes are mutually exclusive:
-    opmodes_opts = parser.add_mutually_exclusive_group(required=True)
-    #print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
+    # Operating modes are subparsers:
+    subparsers  = parser.add_subparsers()
+    print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
     for opmode in ALL_OPER_MODES:
+        this_parser = subparsers.add_parser(
+            opmode[0],
+            )
+        
         pos_arg_spec = (
             opmode[0],
             )
@@ -194,7 +198,10 @@ def main(argv):
             const       = opmode[1],
             help        = opmode[2],
             )
-        print("Adding operating mode: %s %s" % ( repr(pos_arg_spec), repr(kw_arg_spec), ) )
-        opmodes_opts.add_argument(*pos_arg_spec, **kw_arg_spec)
+        #print("Adding operating mode: %s %s" % ( repr(pos_arg_spec), repr(kw_arg_spec), ) )
+        this_parser.add_argument(*pos_arg_spec, **kw_arg_spec)
+        
+        args = parser.parse_args()
+        #print(args)
 
 if __name__ == "__main__": main(sys.argv)
