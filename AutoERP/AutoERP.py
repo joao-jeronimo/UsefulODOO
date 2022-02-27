@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os, subprocess
+import sys, os, argparse, subprocess
 import autoerp_lib
+
+ALL_OPER_MODES = []
+def opermode(func):
+    ALL_OPER_MODES.append(
+        (func.__name__.replace('_', '-'), func, func.__doc__, )
+        )
+    return func
 
 def read_manifest(manifest_path):
     with open(manifest_path, "r") as manifile:
@@ -32,7 +39,7 @@ def fetch_repo_to(repospec, destpath):
         destpath,
         ])
 
-@task
+@opermode
 def fetch_suite_repos(suitename):
     """
     ** Pass 2  - Call this after creating the instance.
@@ -47,7 +54,7 @@ def fetch_suite_repos(suitename):
             os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos", this_repo['localname'])
             )
 
-@task
+@opermode
 def suite_info(suitename):
     """
     Print information about a suite.
@@ -64,7 +71,7 @@ RELEASE_PYVER = {
     '13.0':         "3.7",
     }
 
-@task
+@opermode
 def create_instance(release_num, instancenm, httpport, private=True):
     """
     ** Pass 1  - Call this first, then fetch_suite_repos
@@ -93,7 +100,7 @@ def create_instance(release_num, instancenm, httpport, private=True):
     # Run all the needed targets:
     call_makefile(**makefile_params)
 
-@task
+@opermode
 def install_release(release_num):
     if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
     else:                                   python_version = "3.7"
@@ -123,7 +130,7 @@ def install_release(release_num):
     # Run all the needed targets:
     call_makefile(**makefile_params)
 
-@task
+@opermode
 def call_makefile(   odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="8999",
                         wkhtmltopdf_version="0.12.6-1", debian_codename="buster", python_major_version="3", python_minor_version="7",
                         instance_modfolders="", pythonlibs_dir="",
@@ -155,7 +162,7 @@ def call_makefile(   odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="
         env = make_vars,
         )
 
-@task
+@opermode
 def prepare_virtualenv(python_version="3.7"):
     call_makefile(c,
         python_major_version    = python_version.split('.')[0],
@@ -163,8 +170,31 @@ def prepare_virtualenv(python_version="3.7"):
         targetnames              = "prepare_virtualenv",
         )
 
-@task
+@opermode
 def get_instance_config(self, instancenm):
     inst = autoerp_lib.OdooInstance(instancenm)
     print( repr( inst.get_http_port() ) )
-    
+
+def main(argv):
+    # See: https://docs.python.org/3/library/argparse.html
+    parser = argparse.ArgumentParser(description='Auto ERP - An installer for Odoo.')
+    # Operating modes are mutually exclusive:
+    opmodes_opts = parser.add_mutually_exclusive_group(required=True)
+    #print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
+    for opmode in ALL_OPER_MODES:
+        pos_arg_spec = (
+            opmode[0],
+            )
+        kw_arg_spec = dict(
+            #dest        = opmode[0],
+            #required    = False,
+            #default     = None,
+            
+            action      = 'store_const',
+            const       = opmode[1],
+            help        = opmode[2],
+            )
+        print("Adding operating mode: %s %s" % ( repr(pos_arg_spec), repr(kw_arg_spec), ) )
+        opmodes_opts.add_argument(*pos_arg_spec, **kw_arg_spec)
+
+if __name__ == "__main__": main(sys.argv)
