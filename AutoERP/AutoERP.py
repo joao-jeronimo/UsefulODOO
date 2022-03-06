@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys, os, argparse, subprocess, inspect
-import autoerp_lib
+import sys, os, argparse, subprocess, inspect, autoerp_lib, pdb
 
 ALL_OPER_MODES = []
 def opermode(func):
@@ -27,7 +26,13 @@ def opermode(func):
                 ) )
     # Add command to list:
     ALL_OPER_MODES.append(
-        (subcommand_name, func, func.__doc__, subparser_args, )
+        {
+            'subcommand_name':      subcommand_name,
+            'func':                 func,
+            'function_docstring':   func.__doc__,
+            'function_args':        function_args,
+            'subparser_args':       subparser_args,
+            }
         )
     return func
 
@@ -70,7 +75,7 @@ def fetch_suite_repos(suitename):
     # Fetch the repos:
     all_suite_repos = suitemanifest['repositories']
     for this_repo in all_suite_repos:
-        fetch_repo_to (c,
+        fetch_repo_to (
             this_repo,
             os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos", this_repo['localname'])
             )
@@ -185,7 +190,7 @@ def call_makefile(   odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="
 
 @opermode
 def prepare_virtualenv(python_version="3.7"):
-    call_makefile(c,
+    call_makefile(
         python_major_version    = python_version.split('.')[0],
         python_minor_version    = python_version.split('.')[1],
         targetnames              = "prepare_virtualenv",
@@ -199,29 +204,31 @@ def get_instance_config(self, instancenm):
 def main(argv):
     # See: https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Auto ERP - An installer for Odoo.')
-    # Operating modes are subparsers:
+    # Operating modes are subparsers (add_subparsers() method only enables subparsers feature):
     subparsers  = parser.add_subparsers()
     #print("Operating modes: "+" ".join([ repr(funcd) for funcd in ALL_OPER_MODES ]) )
     for opmode in ALL_OPER_MODES:
-        this_parser = subparsers.add_parser(opmode[0])
-        for this_arg in opmode[3]:
-            this_parser.add_argument(**this_arg)
-        
-        #this_parser.add_argument("number", type=int)
-        
-        #kw_arg_spec = dict(
-        #    #name       = opmode[0],
-        #    #dest        = opmode[0],
-        #    #required    = False,
-        #    #default     = None,
-        #    
-        #    #action      = 'store_const',
-        #    const       = opmode[1],
-        #    help        = opmode[2],
-        #    )
-        #print("Adding operating mode: %s" % ( repr(kw_arg_spec), ) )
-        
+        this_subparser = subparsers.add_parser(opmode['subcommand_name'])
+        # Add subcommand arguments, the same way that top-level arguments would
+        # be added, but add them to the subparser instead:
+        for this_arg in opmode['subparser_args']:
+            this_subparser.add_argument(**this_arg)
+        # Add the function that ought to be called when this subcommand is called. This is
+        # done via set_defaults:
+        this_subparser.set_defaults(func=opmode['func'])
+    
+    # Parse full comand line, then print arguments:
     args = parser.parse_args()
     print(args)
+    # Get list of arguments of the fcuntion that we need to call:
+    function_args = list(inspect.signature(args.func).parameters)
+    # Create dictionary that only contains the function-spacific commands:
+    args_to_subcommand = dict([
+        (func_arg, getattr(args, func_arg))
+        for func_arg in function_args
+        if func_arg in dir(args)
+        ])
+    # Call the command function:
+    args.func(**args_to_subcommand)
 
 if __name__ == "__main__": main(sys.argv)
