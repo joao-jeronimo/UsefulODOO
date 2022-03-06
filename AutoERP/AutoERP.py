@@ -7,22 +7,29 @@ def opermode(func):
     # Subcommand name:
     subcommand_name = func.__name__.replace('_', '-')
     # Build a parser for this subcommand:
-    function_args = list(inspect.signature(func).parameters)
+    function_sign = inspect.signature(func)
+    function_arg_keys = list(function_sign.parameters)
+    #function_sign.parameters['python_version'].default
+    #pdb.set_trace()
     subparser_args = []
-    for this_arg in function_args:
+    for this_arg in function_arg_keys:
+        arg_default = function_sign.parameters[this_arg].default
+        
         subparser_args.append(
             dict(
-                #name       = opmode[0],
-                #dest        = opmode[0],
-                #required    = False,
-                #default     = None,
-                
                 dest        = this_arg,
                 action      = 'store',
                 type        = str,
+                
+                #name       = opmode[0],
+                #dest        = opmode[0],
                 #action      = 'store_const',
                 #const       = opmode[1],
                 #help        = opmode[2],
+                
+                # Absent arguments with comments of why they are absent:
+                #required    = False,           # TypeError: 'required' is an invalid argument for positionals.
+                #default     = arg_default,     # All arguments are mandatory for now, so there are no defaults.
                 ) )
     # Add command to list:
     ALL_OPER_MODES.append(
@@ -30,7 +37,7 @@ def opermode(func):
             'subcommand_name':      subcommand_name,
             'func':                 func,
             'function_docstring':   func.__doc__,
-            'function_args':        function_args,
+            'function_args':        function_arg_keys,
             'subparser_args':       subparser_args,
             }
         )
