@@ -105,7 +105,7 @@ RELEASE_PYVER = {
     }
 
 @opermode
-def create_instance(release_num, instancenm, httpport, private=True):
+def create_instance(release_num, instancenm, httpport, private):
     """
     ** Pass 1  - Call this first, then fetch_suite_repos
     """
@@ -120,7 +120,7 @@ def create_instance(release_num, instancenm, httpport, private=True):
     makefile_params = dict(
         instancenm              = instancenm,
         httpport                = httpport,
-        listen_on               = "127.0.0.1" if private else "0.0.0.0",
+        listen_on               = "127.0.0.1" if private==1 else "0.0.0.0",
         odoo_rel                = release_num,
         wkhtmltopdf_version     = "0.12.6-1",
         debian_codename         = "buster",
@@ -204,9 +204,15 @@ def prepare_virtualenv(python_version="3.7"):
         )
 
 @opermode
-def get_instance_config(self, instancenm):
+def get_instance_config(instancenm):
     inst = autoerp_lib.OdooInstance(instancenm)
     print( repr( inst.get_http_port() ) )
+
+@opermode
+def install_module(instancenm, module_name):
+    inst = autoerp_lib.OdooInstance(instancenm)
+    comm = inst.get_communicator()
+    comm.install_module(module_name)
 
 def main(argv):
     # See: https://docs.python.org/3/library/argparse.html
