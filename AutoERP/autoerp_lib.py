@@ -81,12 +81,13 @@ class OdooInstance:
     
     ### Getting paths:
     def config_file_path(self):
-        return os.path.join(
-            os.path.sep,
-            'odoo',
-            'configs',
-            'odoo-%s.conf' % (self.instancename,),
-            )
+        return os.path.join(os.path.sep, 'odoo', 'configs', 'odoo-%s.conf' % (self.instancename,), )
+    def get_instance_folder_path(self):
+        return os.path.join(autoerp_lib.INSTANCES_DIR, self.instancename)
+    def get_instance_systemd_file_path(self):
+        return os.path.join(os.path.sep, 'lib', 'systemd', 'system', 'odoo-%s.service' % (self.instancename,), )
+    def get_instance_logfile_path(self):
+        return os.path.join(os.path.sep, 'odoo', 'logs', 'odoo-%s.log' % (self.instancename,), )
     
     ### Parsing files:
     def parse_config_file(self):
@@ -177,16 +178,22 @@ class OdooInstance:
         self._call_makefile(**makefile_params)
     
     def install_suite(self, release_num, httpport, private):
-        instance_folder = os.path.join(autoerp_lib.INSTANCES_DIR, self.instancename)
-        subprocess.check_output(["mkdir", "-p", instance_folder, ])
+        subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
         suite = autoerp_lib.SuiteTemplate(self.suitename)
-        suite.fetch_suite_repos(os.path.join(instance_folder, "SuiteRepos"))
+        suite.fetch_suite_repos(os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
         # Create the instance:
         self.create_instance(release_num, httpport, private)
         # Create instance config folder and file:
-        with open(os.path.join(instance_folder, "instance.conf"), "w") as inst_config_file:
+        with open(os.path.join(self.get_instance_folder_path(), "instance.conf"), "w") as inst_config_file:
             inst_config_file.write("suitename = %s" % self.suitename)
+    
+    def purge_instance(self, keep_code=False):
+        subprocess.check_output(['sudo', 'rm', '-rf', self.config_file_path()])
+        subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_systemd_file_path()])
+        subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_logfile_path()])
+        if not keep_code:
+            subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_folder_path()])
     
     def start_instance(self):
         subprocess.check_output(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])

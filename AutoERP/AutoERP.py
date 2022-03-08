@@ -74,6 +74,11 @@ def full_launch_instance(release_num, instancenm, httpport, suitename, private):
     inst.start_instance()
 
 @opermode
+def purge_instance(instancenm):
+    inst = autoerp_lib.OdooInstance(instancenm)
+    inst.purge_instance()
+
+@opermode
 def get_instance_config(instancenm):
     inst = autoerp_lib.OdooInstance(instancenm)
     print( repr( inst.get_http_port() ) )
