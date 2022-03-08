@@ -22,4 +22,4 @@
         { 'name': 'payslip_advanced_info_tab',      'active': True, },
         { 'name': 'payslip_proportional_bases',     'active': True, },
         ],
-    }
+}

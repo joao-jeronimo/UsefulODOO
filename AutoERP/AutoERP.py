@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys, os, argparse, subprocess, inspect, autoerp_lib, pdb
 
+# Collectiong subcommands:
 ALL_OPER_MODES = []
 def opermode(func):
     # Subcommand name:
@@ -43,62 +44,13 @@ def opermode(func):
         )
     return func
 
-def read_manifest(manifest_path):
-    with open(manifest_path, "r") as manifile:
-        manifcontents = manifile.read()
-    return eval(manifcontents)
-
-def create_suite_folders(suitename):
-    subprocess.check_output([
-        "mkdir",
-        "-p",
-        os.path.join(os.path.sep, "odoo", "Suites", suitename),
-        ])
-    subprocess.check_output([
-        "mkdir",
-        "-p",
-        os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos"),
-        ])
-
-def fetch_repo_to(repospec, destpath):
-    #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
-    subprocess.check_output([
-        "git",
-        "clone",
-        "--single-branch",
-        "-b",
-        repospec['branch'],
-        repospec['url'],
-        destpath,
-        ])
-
-@opermode
-def fetch_suite_repos(suitename):
-    """
-    ** Pass 2  - Call this after creating the instance.
-    """
-    suitemanifest = suite_info(suitename)
-    create_suite_folders(suitename)
-    # Fetch the repos:
-    all_suite_repos = suitemanifest['repositories']
-    for this_repo in all_suite_repos:
-        fetch_repo_to (
-            this_repo,
-            os.path.join(os.path.sep, "odoo", "Suites", suitename, "Repos", this_repo['localname'])
-            )
-
 @opermode
 def suite_info(suitename):
     """
     Print information about a suite.
     """
-    suitepath = os.path.join("Suites", suitename)
-    if not os.path.isdir(suitepath):
-        print("No such suite: %s"%suitename)
-        exit(-1)
-    manifest_data = read_manifest(os.path.join(suitepath, "__manifest__.py"))
-    print(repr(manifest_data))
-    return manifest_data
+    suite = SuiteTemplate(suitename)
+    suite.suite_info()
 
 RELEASE_PYVER = {
     '13.0':         "3.7",
@@ -134,6 +86,19 @@ def create_instance(release_num, instancenm, httpport, private):
     call_makefile(**makefile_params)
 
 @opermode
+def install_suite(release_num, instancenm, httpport, suitename, private):
+    instance_folder = os.path.join(autoerp_lib.INSTANCES_DIR, instancenm)
+    subprocess.check_output(["mkdir", "-p", instance_folder, ])
+    # Spawn the suite and fetch repos:
+    suite = autoerp_lib.SuiteTemplate(suitename)
+    suite.fetch_suite_repos(os.path.join(instance_folder, "SuiteRepos"))
+    # Create the instance:
+    create_instance(release_num, instancenm, httpport, private)
+    # Create instance config folder and file:
+    with open(os.path.join(instance_folder, "instance.conf"), "w") as inst_config_file:
+        inst_config_file.write("suitename = %s" % suitename)
+
+@opermode
 def install_release(release_num):
     if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
     else:                                   python_version = "3.7"
@@ -163,7 +128,6 @@ def install_release(release_num):
     # Run all the needed targets:
     call_makefile(**makefile_params)
 
-@opermode
 def call_makefile(   odoo_rel="", instancenm="", listen_on="0.0.0.0", httpport="8999",
                         wkhtmltopdf_version="0.12.6-1", debian_codename="buster", python_major_version="3", python_minor_version="7",
                         instance_modfolders="", pythonlibs_dir="",
