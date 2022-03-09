@@ -6,6 +6,7 @@
             'type':             "included",
             'srcpath':          "./Apps/Payroll/%(odoo_rel)s",
             'localname':        "Payroll",
+            'odoo_releases':    ["13.0", "14.0", "15.0", ],
             'modpaths': [
                 ".",
                 ],
