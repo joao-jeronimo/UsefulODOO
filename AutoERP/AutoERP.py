@@ -90,6 +90,16 @@ def install_module(instancenm, module_name):
     comm = inst.get_communicator()
     comm.install_module(module_name)
 
+@opermode
+def activate_demo_data(instancenm):
+    if not instancenm.endswith("devel"):
+        print("Demo data can only be loaded in databases whose name ends in 'devel'.")
+        exit(-1)
+    inst = autoerp_lib.OdooInstance(instancenm)
+    comm = inst.get_communicator()
+    demo_model = comm.odoo_connection.get_model('ir.demo')
+    demo_model.install_demo(False)
+
 def main(argv):
     # See: https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Auto ERP - An installer for Odoo.')
