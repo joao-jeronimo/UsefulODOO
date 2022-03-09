@@ -233,6 +233,6 @@ class OdooInstance:
             subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_folder_path()])
     
     def start_instance(self):
-        subprocess.check_output(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])
+        subprocess.run(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])
     def stop_instance(self):
-        subprocess.check_output(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])
+        subprocess.run(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])
