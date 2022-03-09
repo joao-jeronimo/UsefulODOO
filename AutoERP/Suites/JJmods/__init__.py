@@ -6,6 +6,7 @@ def snakecase2cammelcase(str_in_snake):
     return "".join([ word.capitalize() for word in splitted ])
 
 def port_app(basedir, app_name_snakecase, target_name):
+    print("Porting app %s for Odoo %s" % (app_name_snakecase, target_name,))
     format_names = {
         'basedir'               : basedir,
         'app_name_snakecase'    : app_name_snakecase,
