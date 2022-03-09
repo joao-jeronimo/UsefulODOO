@@ -1,4 +1,4 @@
-import os, re, pdb
+import os, re, pdb, subprocess
 from io import StringIO
 
 class BinaryFileException(BaseException):
@@ -7,8 +7,7 @@ class BinaryFileException(BaseException):
 class PythonPorter:
     macroes_dikt = {}
     
-    def __init__(self, ctx, macrodir, sourcedir, destdir, filename_regex="(.*\.py|.*\.xml|.*\.csv|.*\.po|.*\.pot)$"):
-        self.ctx            = ctx
+    def __init__(self, macrodir, sourcedir, destdir, filename_regex="(.*\.py|.*\.xml|.*\.csv|.*\.po|.*\.pot)$"):
         self.macrodir       = macrodir
         self.sourcedir      = sourcedir
         self.destdir        = destdir
@@ -43,17 +42,15 @@ class PythonPorter:
         return haldir
     
     def find_dirs(self):
-        outread_stream = StringIO()
-        self.ctx.run("find "+os.path.join(self.sourcedir, '*')+" -type d", out_stream=outread_stream)
+        find_output = subprocess.check_output([ "find", self.sourcedir, "-type", "d" ])
         #, in_stream=StringIO(postgres_input)
-        haldir = self.preprocess_find_output(outread_stream.getvalue())
+        haldir = self.preprocess_find_output(str(find_output))
         return haldir
     
     def find_files(self):
-        outread_stream = StringIO()
-        self.ctx.run("find "+os.path.join(self.sourcedir, '*')+" -type f", out_stream=outread_stream)
+        find_output = subprocess.check_output([ "find", self.sourcedir, "-type", "f" ])
         #, in_stream=StringIO(postgres_input)
-        halfile = self.preprocess_find_output(outread_stream.getvalue())
+        halfile = self.preprocess_find_output(str(find_output))
         return halfile
     
     def filter_matching(self, fileslist):
@@ -66,18 +63,18 @@ class PythonPorter:
     
     def copy_dir_structure(self):
         haldirs = self.find_dirs()
-        self.ctx.run("mkdir -p "+self.destdir)
+        subprocess.check_output(["mkdir", "-p", self.destdir])
         for thisdir in haldirs:
             thisdir_relative = re.sub("^"+self.sourcedir+"/*", "", thisdir)
-            self.ctx.run("sudo rm -rf "+os.path.join(self.destdir, thisdir_relative))
+            subprocess.check_output(["sudo", "rm", "-rf", os.path.join(self.destdir, thisdir_relative)])
         for thisdir in haldirs:
             thisdir_relative = re.sub("^"+self.sourcedir+"/*", "", thisdir)
-            self.ctx.run("mkdir "+os.path.join(self.destdir, thisdir_relative))
+            subprocess.check_output([ "mkdir", os.path.join(self.destdir, thisdir_relative) ])
     
     def transfer_file(self, filename):
         real_src_path = os.path.join(self.sourcedir, filename)
         real_dst_path = os.path.join(self.destdir, filename)
-        self.ctx.run("cp %s %s" % (real_src_path, real_dst_path,))
+        subprocess.check_output([ "cp", real_src_path, real_dst_path ])
     
     def preproccess_and_transfer_file(self, filename):
         real_src_path = os.path.join(self.sourcedir, filename)

@@ -59,18 +59,18 @@ def create_instance(release_num, instancenm, httpport, private):
     """
     ** Pass 1  - Call this first, then fetch_suite_repos
     """
-    inst = autoerp_lib.OdooInstance(instancenm)
-    inst.create_instance(release_num, httpport, private)
+    inst = autoerp_lib.OdooInstance(instancenm, release_num)
+    inst.create_instance(httpport, private)
 
 @opermode
 def install_suite(release_num, instancenm, httpport, suitename, private):
-    inst = autoerp_lib.OdooInstance(instancenm, suitename)
-    inst.install_suite(release_num, httpport, private)
+    inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
+    inst.install_suite(httpport, private)
 
 @opermode
 def full_launch_instance(release_num, instancenm, httpport, suitename, private):
-    inst = autoerp_lib.OdooInstance(instancenm, suitename)
-    inst.install_suite(release_num, httpport, private)
+    inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
+    inst.install_suite(httpport, private)
     inst.start_instance()
 
 @opermode

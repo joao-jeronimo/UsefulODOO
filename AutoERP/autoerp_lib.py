@@ -90,12 +90,14 @@ class SuiteTemplate:
         return all_module_paths
 
 class OdooInstance:
-    def __init__(self, instancename, suitename=None):
+    def __init__(self, instancename, release_num, suitename=None):
         (
             self.instancename,
+            self.release_num,
             self.suitename,
             ) = (
                 instancename,
+                release_num,
                 suitename,
             )
     
@@ -169,8 +171,8 @@ class OdooInstance:
             env = make_vars,
             )
     
-    def create_instance(self, release_num, httpport, instance_modfolders, private):
-        if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
+    def create_instance(self, httpport, instance_modfolders, private):
+        if self.release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[self.release_num]
         else:                                   python_version = "3.7"
         # A list of targets to run:
         TARGETS_TO_RUN = [
@@ -182,7 +184,7 @@ class OdooInstance:
             instancenm              = self.instancename,
             httpport                = httpport,
             listen_on               = "127.0.0.1" if private==1 else "0.0.0.0",
-            odoo_rel                = release_num,
+            odoo_rel                = self.release_num,
             wkhtmltopdf_version     = "0.12.6-1",
             debian_codename         = "buster",
             python_major_version    = python_version.split('.')[0],
@@ -194,7 +196,7 @@ class OdooInstance:
         # Run all the needed targets:
         self._call_makefile(**makefile_params)
     
-    def install_suite(self, release_num, httpport, private):
+    def install_suite(self, httpport, private):
         """
         Does a full suite install if it is not already installed.
         """
@@ -203,7 +205,7 @@ class OdooInstance:
         suite = autoerp_lib.SuiteTemplate(self.suitename)
         all_modulepaths = suite.fetch_suite_repos(self, os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
         # Create the instance:
-        self.create_instance(release_num, httpport, all_modulepaths, private)
+        self.create_instance(httpport, all_modulepaths, private)
         # Create instance config folder and file:
         with open(os.path.join(self.get_instance_folder_path(), "instance.conf"), "w") as inst_config_file:
             inst_config_file.write("suitename = %s" % self.suitename)
