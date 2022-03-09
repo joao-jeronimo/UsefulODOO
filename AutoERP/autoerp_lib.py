@@ -58,7 +58,20 @@ class SuiteTemplate:
             destpath,
             ])
     
-    def fetch_suite_repos(self, basedir):
+    def run_hook(self, instance, repo, hookname, basedir):
+        # Get name of function to call:
+        function_name = repo[hookname]
+        # Import the suite as a python package:
+        suite_package = importlib.import_module( "Suites."+self.suitename )
+        # Try to get the function to call:
+        hook_function = getattr(suite_package, function_name)
+        # Do call it:
+        hook_function(instance, repo['localname'], basedir)
+    
+    def fetch_suite_repos(self, instance, basedir):
+        return self.do_fetch_suite_repos(instance, basedir)
+    
+    def do_fetch_suite_repos(self, instance, basedir):
         """
         Fetches all suite repositories, returning the resulting paths of the fetched modules.
         """
@@ -72,6 +85,8 @@ class SuiteTemplate:
             self._fetch_repo_to ( this_repo, repo_root )
             for this_modpath in this_repo['modpaths']:
                 all_module_paths.append(os.path.join(repo_root, this_modpath))
+            # Run the post-fetch hook for this repository:
+            self.run_hook(instance, this_repo, "post_fetch_hook", basedir)
         return all_module_paths
 
 class OdooInstance:
@@ -155,9 +170,6 @@ class OdooInstance:
             )
     
     def create_instance(self, release_num, httpport, instance_modfolders, private):
-        """
-        ** Pass 1  - Call this first, then fetch_suite_repos
-        """
         if release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[release_num]
         else:                                   python_version = "3.7"
         # A list of targets to run:
@@ -184,12 +196,12 @@ class OdooInstance:
     
     def install_suite(self, release_num, httpport, private):
         """
-        Installs the suite if it is not already installed.
+        Does a full suite install if it is not already installed.
         """
         subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
         suite = autoerp_lib.SuiteTemplate(self.suitename)
-        all_modulepaths = suite.fetch_suite_repos(os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
+        all_modulepaths = suite.fetch_suite_repos(self, os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
         # Create the instance:
         self.create_instance(release_num, httpport, all_modulepaths, private)
         # Create instance config folder and file:

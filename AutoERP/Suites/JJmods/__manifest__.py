@@ -8,7 +8,7 @@
             'localname':        "SimplePayslipTemplate",
             'branch':           "apps-dev",
             # Python function to port the modules after clone/checkout.
-            'mod_prepare_hook': "port_modules_odoo",
+            'post_fetch_hook':  "port_modules_odoo",
             'modpaths': [
                 "0_Installable/15.0",
                 ],
