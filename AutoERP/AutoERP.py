@@ -72,6 +72,7 @@ def full_launch_instance(release_num, instancenm, httpport, suitename, private):
     inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
     inst.install_suite(httpport, private)
     inst.start_instance()
+    inst.install_all_apps()
 
 @opermode
 def purge_instance(instancenm):

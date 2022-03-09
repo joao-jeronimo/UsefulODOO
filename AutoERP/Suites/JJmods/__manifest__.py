@@ -24,6 +24,9 @@
             },
         ],
     'modules':  [
+        { 'name': 'hr_contract_types',              'active': True, },
+        { 'name': 'hr_payroll_community',           'active': True, },
+        
         { 'name': 'alternative_detailed_payslip',   'active': True, },
         { 'name': 'payslip_aggregate_rule',         'active': True, },
         { 'name': 'payroll_typesafe_formulas',      'active': True, },

@@ -169,6 +169,22 @@ class OdooCommunicator:
         # Create the connection:
         self.reconnect()
     
+    def wait_for_instance_ready(self):
+        trial = 0
+        while True:
+            try:
+                users_model = self.odoo_connection.get_model('res.users')
+                num_users = users_model.search_count([])
+                break
+            except BaseException as cre:
+                if trial > N_TRIALS:
+                    raise cre
+                print("Connection refused. Trying again in %d seconds" % WAIT_SECS)
+                time.sleep(WAIT_SECS)
+                trial += 1
+                continue
+        return num_users
+    
     connection_context = {}
     
     def reconnect(self):

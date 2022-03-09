@@ -104,16 +104,19 @@ class SuiteTemplate:
         return all_module_paths
 
 class OdooInstance:
-    def __init__(self, instancename, release_num=None, suitename=None):
+    def __init__(self, instancename, release_num=None, suitename=None, admin_password="admin"):
         (
             self.instancename,
             self.release_num,
             self.suitename,
+            self.admin_password,
             ) = (
                 instancename,
                 release_num,
                 suitename,
+                admin_password,
             )
+        self.suite = autoerp_lib.SuiteTemplate(self.suitename)
     
     ### Getting paths:
     def config_file_path(self):
@@ -139,7 +142,7 @@ class OdooInstance:
         return httpport
     
     def get_odoo_connection_params(self, username, user_id):
-        return {
+        conn_parms = {
             'hostname'  : 'localhost',
             'port'      : self.get_http_port(),
             'protocol'  : 'jsonrpc',
@@ -147,6 +150,11 @@ class OdooInstance:
             'login'     : username,
             'user_id'   : user_id,
             }
+        if username=='admin' and self.admin_password:
+            conn_parms.update({
+                'password'  : self.admin_password,
+                })
+        return conn_parms
     
     def get_communicator(self, username="admin", user_id=2):
         return util_odoo.OdooCommunicator(self.get_odoo_connection_params(username, user_id))
@@ -216,8 +224,7 @@ class OdooInstance:
         """
         subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
-        suite = autoerp_lib.SuiteTemplate(self.suitename)
-        all_modulepaths = suite.fetch_suite_repos(self, os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
+        all_modulepaths = self.suite.fetch_suite_repos(self, os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
         # Create the instance:
         self.create_instance(httpport, all_modulepaths, private)
         # Create instance config folder and file:
@@ -236,3 +243,11 @@ class OdooInstance:
         subprocess.run(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])
     def stop_instance(self):
         subprocess.run(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])
+    
+    def install_all_apps(self):
+        thecomm = self.get_communicator()
+        thecomm.wait_for_instance_ready()
+        suitemanifest = self.suite.suite_info()
+        for appspec in suitemanifest['modules']:
+            if appspec['active']:
+                thecomm.install_module(appspec['name'])
