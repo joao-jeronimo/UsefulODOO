@@ -30,11 +30,14 @@ class SuiteTemplate:
             manifcontents = manifile.read()
         return eval(manifcontents)
     
+    def suitepath(self):
+        return os.path.join(SUITE_TEMPLATE_DIR, self.suitename)
+    
     def suite_info(self):
         """
         Print information about a suite.
         """
-        suitepath = os.path.join(SUITE_TEMPLATE_DIR, self.suitename)
+        suitepath = self.suitepath()
         if not os.path.isdir(suitepath):
             print("No such suite: %s"%self.suitename)
             exit(-1)
@@ -46,17 +49,26 @@ class SuiteTemplate:
         subprocess.check_output(["mkdir", "-p", os.path.join(basedir),                  ])
         subprocess.check_output(["mkdir", "-p", os.path.join(basedir, "SuiteRepos"),    ])
     
-    def _fetch_repo_to(self, repospec, destpath):
-        #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
-        subprocess.check_output([
-            "git",
-            "clone",
-            "--single-branch",
-            "-b",
-            repospec['branch'],
-            repospec['url'],
-            destpath,
-            ])
+    def _fetch_repo_to(self, repospec, instance, destpath):
+        if repospec['type'] == 'git':
+            #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
+            subprocess.check_output([
+                "git",
+                "clone",
+                "--single-branch",
+                "-b",
+                repospec['branch'],
+                repospec['url'],
+                destpath,
+                ])
+        elif repospec['type'] == 'included':
+            srcpath = os.path.join(self.suitepath(), (repospec['srcpath'])%{ 'odoo_rel': instance.release_num, } )
+            subprocess.check_output([
+                "cp",
+                "-Rv",
+                srcpath,
+                destpath,
+                ])
     
     def run_hook(self, instance, repo, hookname, basedir):
         # Get name of function to call:
@@ -82,7 +94,7 @@ class SuiteTemplate:
         all_module_paths = []
         for this_repo in all_suite_repos:
             repo_root = os.path.join(basedir, this_repo['localname'])
-            self._fetch_repo_to ( this_repo, repo_root )
+            self._fetch_repo_to ( this_repo, instance, repo_root )
             for this_modpath in this_repo['modpaths']:
                 all_module_paths.append(os.path.join(repo_root, this_modpath))
             # Run the post-fetch hook for this repository:
@@ -90,7 +102,7 @@ class SuiteTemplate:
         return all_module_paths
 
 class OdooInstance:
-    def __init__(self, instancename, release_num, suitename=None):
+    def __init__(self, instancename, release_num=None, suitename=None):
         (
             self.instancename,
             self.release_num,
@@ -211,6 +223,7 @@ class OdooInstance:
             inst_config_file.write("suitename = %s" % self.suitename)
     
     def purge_instance(self, keep_code=False):
+        self.stop_instance()
         subprocess.check_output(['sudo', 'rm', '-rf', self.config_file_path()])
         subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_systemd_file_path()])
         subprocess.check_output(['sudo', 'rm', '-rf', self.get_instance_logfile_path()])
@@ -219,3 +232,5 @@ class OdooInstance:
     
     def start_instance(self):
         subprocess.check_output(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])
+    def stop_instance(self):
+        subprocess.check_output(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])

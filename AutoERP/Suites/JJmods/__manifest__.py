@@ -3,6 +3,14 @@
     'odoo_branch':  "15.0",
     'repositories': [
         {
+            'type':             "included",
+            'srcpath':          "./Apps/Payroll/%(odoo_rel)s",
+            'localname':        "Payroll",
+            'modpaths': [
+                ".",
+                ],
+            },
+        {
             'type':             "git",
             'url':              "git@github.com:joao-jeronimo/SimplePayslipTemplate.git",
             'localname':        "SimplePayslipTemplate",
@@ -12,7 +20,7 @@
             'modpaths': [
                 "0_Installable/15.0",
                 ],
-            }
+            },
         ],
     'modules':  [
         { 'name': 'alternative_detailed_payslip',   'active': True, },
