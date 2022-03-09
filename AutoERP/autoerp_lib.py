@@ -247,6 +247,7 @@ class OdooInstance:
     def install_all_apps(self):
         thecomm = self.get_communicator()
         thecomm.wait_for_instance_ready()
+        thecomm.update_modules_list()
         suitemanifest = self.suite.suite_info()
         for appspec in suitemanifest['modules']:
             if appspec['active']:

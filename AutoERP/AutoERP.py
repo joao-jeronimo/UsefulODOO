@@ -87,8 +87,9 @@ def get_instance_config(instancenm):
 @opermode
 def install_module(instancenm, module_name):
     inst = autoerp_lib.OdooInstance(instancenm)
-    comm = inst.get_communicator()
-    comm.install_module(module_name)
+    thecomm = inst.get_communicator()
+    thecomm.update_modules_list()
+    thecomm.install_module(module_name)
 
 @opermode
 def activate_demo_data(instancenm):

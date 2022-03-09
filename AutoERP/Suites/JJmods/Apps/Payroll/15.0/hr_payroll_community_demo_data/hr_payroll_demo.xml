@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="demo_payslip_01" model="hr.payslip">
+            <field name="name">Demo Payslip</field>
+        </record>
+
+</odoo>
