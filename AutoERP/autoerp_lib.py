@@ -72,6 +72,8 @@ class SuiteTemplate:
     
     def run_hook(self, instance, repo, hookname, basedir):
         # Get name of function to call:
+        if hookname not in repo:
+            return
         function_name = repo[hookname]
         # Import the suite as a python package:
         suite_package = importlib.import_module( "Suites."+self.suitename )
