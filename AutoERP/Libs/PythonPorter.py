@@ -38,19 +38,22 @@ class PythonPorter:
         return dsttxt
     
     def preprocess_find_output(self, find_output):
-        haldir = [ re.sub("^"+self.sourcedir+"/*", "", dirpath) for dirpath in find_output.strip().split() ]
+        haldir = [
+            re.sub("^"+self.sourcedir+"/*", "", dirpath)
+            for dirpath in find_output.strip().split()
+            ]
         return haldir
     
     def find_dirs(self):
         find_output = subprocess.check_output([ "find", self.sourcedir, "-type", "d" ])
         #, in_stream=StringIO(postgres_input)
-        haldir = self.preprocess_find_output(str(find_output))
+        haldir = self.preprocess_find_output(find_output.decode())
         return haldir
     
     def find_files(self):
         find_output = subprocess.check_output([ "find", self.sourcedir, "-type", "f" ])
         #, in_stream=StringIO(postgres_input)
-        halfile = self.preprocess_find_output(str(find_output))
+        halfile = self.preprocess_find_output(find_output.decode())
         return halfile
     
     def filter_matching(self, fileslist):
