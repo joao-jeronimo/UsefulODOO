@@ -3,6 +3,7 @@
 
         <record id="demo_payslip_01" model="hr.payslip">
             <field name="name">Demo Payslip</field>
+            <field name="employee_id" ref="hr.employee_hne" />
         </record>
 
 </odoo>

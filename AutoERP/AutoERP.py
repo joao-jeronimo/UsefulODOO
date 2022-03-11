@@ -85,11 +85,17 @@ def get_instance_config(instancenm):
     print( repr( inst.get_http_port() ) )
 
 @opermode
-def install_module(instancenm, module_name):
+def update_module(instancenm, module_name):
     inst = autoerp_lib.OdooInstance(instancenm)
+    # Re-run post-fetch hooks for each repository:
+    inst.suite.do_prepare_suite_repos(inst)
+    # Restart deamon:
+    inst.restart_instance()
+    # Call upgrade:
     thecomm = inst.get_communicator()
+    thecomm.wait_for_instance_ready()
     thecomm.update_modules_list()
-    thecomm.install_module(module_name)
+    thecomm.install_or_upgrade_module(module_name)
 
 @opermode
 def activate_demo_data(instancenm):

@@ -1,4 +1,4 @@
-import sys, os, argparse, subprocess, inspect, autoerp_lib, pdb, importlib
+import sys, os, argparse, subprocess, inspect, autoerp_lib, pdb, importlib, re
 # Push "Libs" directory onto python path:
 scriptdir = os.path.dirname(os.path.abspath(__file__))
 libs_dir = os.path.join(scriptdir, "Libs")
@@ -12,6 +12,7 @@ odoo_config_parser = importlib.import_module( "odoo.tools.config" )
 ODOO_ROOT = os.path.join(os.path.sep, "odoo")
 SUITE_TEMPLATE_DIR = os.path.join(os.path.curdir, "Suites")
 INSTANCES_DIR = os.path.join(ODOO_ROOT, "Instances")
+REPOS_SUBFOLDER_NAME = "SuiteRepos"
 
 RELEASE_PYVER = {
     '13.0':         "3.7",
@@ -24,6 +25,7 @@ class SuiteTemplate:
             ) = (
                 suitename,
             )
+        self.suitemanifest = self.suite_info()
     
     def _read_manifest(self, manifest_path):
         with open(manifest_path, "r") as manifile:
@@ -47,7 +49,6 @@ class SuiteTemplate:
     
     def create_suite_folders(self, basedir):
         subprocess.check_output(["mkdir", "-p", os.path.join(basedir),                  ])
-        subprocess.check_output(["mkdir", "-p", os.path.join(basedir, "SuiteRepos"),    ])
     
     def _fetch_repo_to(self, repospec, instance, destpath):
         if repospec['type'] == 'git':
@@ -82,26 +83,47 @@ class SuiteTemplate:
         # Do call it:
         hook_function(instance, repo['localname'], basedir)
     
-    def fetch_suite_repos(self, instance, basedir):
-        return self.do_fetch_suite_repos(instance, basedir)
+    def fetch_prepare_suite_repos(self, instance):
+        self.do_fetch_suite_repos( instance )
+        self.do_prepare_suite_repos( instance )
+        return self.get_module_paths( instance )
     
-    def do_fetch_suite_repos(self, instance, basedir):
+    def get_module_paths(self, instance):
         """
         Fetches all suite repositories, returning the resulting paths of the fetched modules.
         """
-        suitemanifest = self.suite_info()
-        self.create_suite_folders(basedir)
+        all_suite_repos = self.suitemanifest['repositories']
+        basedir = instance.get_instance_repos_path()
         # Fetch the repos, building and collecting the resulting paths for return:
-        all_suite_repos = suitemanifest['repositories']
         all_module_paths = []
         for this_repo in all_suite_repos:
             repo_root = os.path.join(basedir, this_repo['localname'])
-            self._fetch_repo_to ( this_repo, instance, repo_root )
             for this_modpath in this_repo['modpaths']:
                 all_module_paths.append(os.path.join(repo_root, this_modpath))
+        return all_module_paths
+    
+    def do_fetch_suite_repos(self, instance):
+        """
+        Fetches all suite repositories, returning the resulting paths of the fetched modules.
+        """
+        all_suite_repos = self.suitemanifest['repositories']
+        basedir = instance.get_instance_repos_path()
+        self.create_suite_folders(basedir)
+        # Fetch the repos, building and collecting the resulting paths for return:
+        for this_repo in all_suite_repos:
+            repo_root = os.path.join(basedir, this_repo['localname'])
+            self._fetch_repo_to ( this_repo, instance, repo_root )
+    
+    def do_prepare_suite_repos(self, instance):
+        """
+        Run all post-fetch hooks:
+        """
+        all_suite_repos = self.suitemanifest['repositories']
+        basedir = instance.get_instance_repos_path()
+        # Fetch the repos, building and collecting the resulting paths for return:
+        for this_repo in all_suite_repos:
             # Run the post-fetch hook for this repository:
             self.run_hook(instance, this_repo, "post_fetch_hook", basedir)
-        return all_module_paths
 
 class OdooInstance:
     def __init__(self, instancename, release_num=None, suitename=None, admin_password="admin"):
@@ -116,13 +138,25 @@ class OdooInstance:
                 suitename,
                 admin_password,
             )
+        self.parse_config_file()
+        # Fill-in holes:
+        if release_num is None:
+            #addons_path = self.cfgman.get('addons_path')
+            self.release_num = self.find_odoo_release()
+        if suitename is None:
+            self.suitename = self.find_suitename()
+        # Instanciate the suite of the instance:
         self.suite = autoerp_lib.SuiteTemplate(self.suitename)
     
     ### Getting paths:
     def config_file_path(self):
         return os.path.join(os.path.sep, 'odoo', 'configs', 'odoo-%s.conf' % (self.instancename,), )
+    def instance_conf_file_path(self):
+        return os.path.join(self.get_instance_folder_path(), "instance.conf")
     def get_instance_folder_path(self):
         return os.path.join(autoerp_lib.INSTANCES_DIR, self.instancename)
+    def get_instance_repos_path(self):
+        return os.path.join(self.get_instance_folder_path(), REPOS_SUBFOLDER_NAME)
     def get_instance_systemd_file_path(self):
         return os.path.join(os.path.sep, 'lib', 'systemd', 'system', 'odoo-%s.service' % (self.instancename,), )
     def get_instance_logfile_path(self):
@@ -132,8 +166,27 @@ class OdooInstance:
     def parse_config_file(self):
         file_path = self.config_file_path()
         print("Parsing config file %s" % (file_path,))
-        cfgman = odoo_config_parser.configmanager(file_path)
-        return cfgman
+        self.cfgman = odoo_config_parser.configmanager(file_path)
+        return self.cfgman
+    def parse_instance_conf_file(self):
+        instanceconf_filepath = self.instance_conf_file_path()
+        self.instance_confs = {}
+        with open(instanceconf_filepath, "r") as inst_config_file:
+            for lin in inst_config_file:
+                confpair = lin.split("=")
+                self.instance_confs[confpair[0].strip()] = confpair[1].strip()
+        return self.instance_confs
+    def find_odoo_release(self):
+        systemd_file = self.get_instance_systemd_file_path()
+        with open(systemd_file, "r") as sysd_file:
+            for lin in sysd_file:
+                odoobin_matches = re.match(".*/odoo/releases/([0-9.]+)/odoo-bin", lin, flags=0)
+                #pdb.set_trace()
+                if odoobin_matches is not None:
+                    return odoobin_matches[1]
+    def find_suitename(self):
+        self.parse_instance_conf_file()
+        return self.instance_confs['suitename']
     
     ## High-level methods:
     def get_http_port(self):
@@ -224,7 +277,7 @@ class OdooInstance:
         """
         subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
-        all_modulepaths = self.suite.fetch_suite_repos(self, os.path.join(self.get_instance_folder_path(), "SuiteRepos"))
+        all_modulepaths = self.suite.fetch_prepare_suite_repos(self)
         # Create the instance:
         self.create_instance(httpport, all_modulepaths, private)
         # Create instance config folder and file:
@@ -243,6 +296,8 @@ class OdooInstance:
         subprocess.run(['sudo', 'systemctl', 'start', 'odoo-%s'%self.instancename])
     def stop_instance(self):
         subprocess.run(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])
+    def restart_instance(self):
+        subprocess.run(['sudo', 'systemctl', 'restart', 'odoo-%s'%self.instancename])
     
     def install_all_apps(self):
         thecomm = self.get_communicator()
