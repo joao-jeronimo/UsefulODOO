@@ -34,3 +34,5 @@ def port_modules_odoo(instance, repo_localname, basedir):
     port_app(repo_dir, "payslip_advanced_info_tab", odoo_release)
     port_app(repo_dir, "payslip_effective_dates", odoo_release)
     port_app(repo_dir, "payslip_proportional_bases", odoo_release)
+    
+    port_app(repo_dir, "hr_payroll_community_demo_data", odoo_release)
