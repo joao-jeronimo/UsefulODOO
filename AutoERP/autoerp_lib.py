@@ -266,7 +266,7 @@ class OdooInstance:
         subprocess.check_output([ "sudo", "apt-get", "install", "-y", "libpq-dev", "libjpeg-dev", "libxml2-dev", "libxslt-dev", "zlib1g-dev", ])
         subprocess.check_output([ "sudo", "apt-get", "install", "build-dep", "-y", "python3-ldap", "python3-lxml", "python3-greenlet", ])
         # Install git and other misc stuff:
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "git", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "git", "screenie", ])
     
     def _lowlevel_install_wkhtmltopdf(self):
         """
@@ -278,11 +278,11 @@ class OdooInstance:
         pass
     def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
         """
-        sudo -H pip3 install --upgrade pip
         # Force install PortgreSQL API (psycopg2) from source:
-        source $(VIRTUALENV_PATH)/bin/activate && pip3 install --ignore-installed --no-binary :all: psycopg2
+        source $(VIRTUALENV_PATH)/bin/activate && pip3 install 
         """
-        pass
+        subprocess.check_output([ "sudo", "pip3", "install", "--upgrade", "pip", ])
+        subprocess.check_output([ "sudo", "pip3", "install", "--ignore-installed", "--no-binary", ":all:", "psycopg2", ])
     
     def _lowlevel_create_instance(self, httpport, instance_modfolders, private):
         # Process args:
