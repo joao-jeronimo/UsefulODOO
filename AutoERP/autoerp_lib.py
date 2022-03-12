@@ -247,27 +247,6 @@ class OdooInstance:
             )
     
     def _lowlevel_install_debian_deps(self, python_major_version, python_minor_version, debian=True):
-        """
-        apt-get update
-        
-        apt-get install -y software-properties-common
-        if debian:
-            add-apt-repository contrib
-            add-apt-repository non-free
-        
-        apt-get update
-        
-        sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)
-        sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
-        sudo apt-get install -y git
-        
-        apt-get install -y python3-pip
-        apt-get install -y libffi-dev
-        apt-get install -y postgresql postgresql-client
-        apt-get install -y ttf-mscorefonts-installer fonts-lato node-less
-        apt-get install -y libpq-dev libjpeg-dev libxml2-dev libxslt-dev zlib1g-dev
-        apt-get build-dep -y python3-ldap python3-lxml python3-greenlet
-        """
         # Add needed repositories and update package tree:
         subprocess.check_output([ "sudo", "apt-get", "update", ])
         subprocess.check_output([ "sudo", "apt-get", "install", "-y", "software-properties-common", ])
@@ -275,13 +254,19 @@ class OdooInstance:
             subprocess.check_output([ "sudo", "add-apt-repository", "contrib", ])
             subprocess.check_output([ "sudo", "add-apt-repository", "non-free", ])
         subprocess.check_output([ "sudo", "apt-get", "update", ])
-        # Install python:
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
-        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        # Install python, pip, venv and other python dependencies:
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "python"+str(python_major_version), ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "python"+str(python_major_version)+"-pip", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "python"+str(python_major_version)+"."+str(python_minor_version)+"-venv", ])
+        # Install packages needed for building some wheels:
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "libffi-dev", ])
+        # Install other Odoo deb-based dependencies:
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "postgresql", "postgresql-client", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "ttf-mscorefonts-installer", "fonts-lato", "node-less", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "libpq-dev", "libjpeg-dev", "libxml2-dev", "libxslt-dev", "zlib1g-dev", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "build-dep", "-y", "python3-ldap", "python3-lxml", "python3-greenlet", ])
+        # Install git and other misc stuff:
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "git", ])
     
     def _lowlevel_install_wkhtmltopdf(self):
         """
