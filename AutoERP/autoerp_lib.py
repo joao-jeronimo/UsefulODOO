@@ -246,15 +246,73 @@ class OdooInstance:
             env = make_vars,
             )
     
-    def create_instance(self, httpport, instance_modfolders, private):
-        if self.release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[self.release_num]
-        else:                                   python_version = "3.7"
+    def _lowlevel_install_debian_deps(self, python_major_version, python_minor_version, debian=True):
+        """
+        apt-get update
+        
+        apt-get install -y software-properties-common
+        if debian:
+            add-apt-repository contrib
+            add-apt-repository non-free
+        
+        apt-get update
+        
+        sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)
+        sudo apt-get install -y python$(PYTHON_MAJOR_VERSION)-pip python$(PYTHON_MAJOR_VERSION).$(PYTHON_MINOR_VERSION)-venv
+        sudo apt-get install -y git
+        
+        apt-get install -y python3-pip
+        apt-get install -y libffi-dev
+        apt-get install -y postgresql postgresql-client
+        apt-get install -y ttf-mscorefonts-installer fonts-lato node-less
+        apt-get install -y libpq-dev libjpeg-dev libxml2-dev libxslt-dev zlib1g-dev
+        apt-get build-dep -y python3-ldap python3-lxml python3-greenlet
+        """
+        # Add needed repositories and update package tree:
+        subprocess.check_output([ "sudo", "apt-get", "update", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "software-properties-common", ])
+        if debian:
+            subprocess.check_output([ "sudo", "add-apt-repository", "contrib", ])
+            subprocess.check_output([ "sudo", "add-apt-repository", "non-free", ])
+        subprocess.check_output([ "sudo", "apt-get", "update", ])
+        # Install python:
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+        subprocess.check_output([ "sudo", "apt-get", "install", "-y", "aaaa", "aaaa", "aaaa", "aaaa", "aaaa", ])
+    
+    def _lowlevel_install_wkhtmltopdf(self):
+        """
+        @wget -c https://github.com/wkhtmltopdf/packaging/releases/download/$(WKHTMLTOPDF_VERSION)/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb -O ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb
+        @dpkg -i ~/wkhtmltox_$(WKHTMLTOPDF_VERSION).$(DEBIAN_CODENAME)_amd64.deb || true
+        @apt-get --fix-broken install -y
+        @touch $@
+        """
+        pass
+    def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
+        """
+        sudo -H pip3 install --upgrade pip
+        # Force install PortgreSQL API (psycopg2) from source:
+        source $(VIRTUALENV_PATH)/bin/activate && pip3 install --ignore-installed --no-binary :all: psycopg2
+        """
+        pass
+    
+    def _lowlevel_create_instance(self, httpport, instance_modfolders, private):
+        # Process args:
+        python_major_version    = python_version.split('.')[0]
+        python_minor_version    = python_version.split('.')[1]
+        # Install/upgrade required Debian and Python dependencies:
+        self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
+        self._lowlevel_install_wkhtmltopdf()
+        self._lowlevel_install_python_deps(python_major_version, python_minor_version)
         # A list of targets to run:
         TARGETS_TO_RUN = [
             "prepare_virtualenv",
             "prepare_all",
             ]
-        # Prepara parameters:
+        # Prepare parameters:
         makefile_params = dict(
             instancenm              = self.instancename,
             httpport                = httpport,
@@ -262,14 +320,19 @@ class OdooInstance:
             odoo_rel                = self.release_num,
             wkhtmltopdf_version     = "0.12.6-1",
             debian_codename         = "buster",
-            python_major_version    = python_version.split('.')[0],
-            python_minor_version    = python_version.split('.')[1],
+            python_major_version    = python_major_version,
+            python_minor_version    = python_minor_version,
             instance_modfolders     = ",".join(instance_modfolders),
             pythonlibs_dir          = "/odoo/PythonLibs",
             targetnames             = " ".join(TARGETS_TO_RUN),
             )
         # Run all the needed targets:
         self._call_makefile(**makefile_params)
+    
+    def create_instance(self, httpport, instance_modfolders, private):
+        if self.release_num in RELEASE_PYVER.keys(): python_version = RELEASE_PYVER[self.release_num]
+        else:                                   python_version = "3.7"
+        self._lowlevel_create_instance(httpport, instance_modfolders, private)
     
     def install_suite(self, httpport, private):
         """
@@ -307,3 +370,13 @@ class OdooInstance:
         for appspec in suitemanifest['modules']:
             if appspec['active']:
                 thecomm.install_module(appspec['name'])
+
+class NginxInstance:
+    def __init__(self, odoo_instance):
+        pass
+    def _lowlevel_install_debian_deps(self):
+        """
+        apt-get update
+        apt-get install -y nginx
+        """
+        pass
