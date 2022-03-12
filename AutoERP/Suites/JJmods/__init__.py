@@ -27,12 +27,15 @@ def port_modules_odoo(instance, repo_localname, basedir):
     odoo_release = instance.release_num
     repo_dir = os.path.join(basedir, repo_localname)
     # Port each app:
+    port_app(repo_dir, "payslip_advanced_info_tab", odoo_release)
+    
     port_app(repo_dir, "payslip_aggregate_rule", odoo_release)
     port_app(repo_dir, "payroll_typesafe_formulas", odoo_release)
-    port_app(repo_dir, "alternative_detailed_payslip", odoo_release)
     
-    port_app(repo_dir, "payslip_advanced_info_tab", odoo_release)
     port_app(repo_dir, "payslip_effective_dates", odoo_release)
     port_app(repo_dir, "payslip_proportional_bases", odoo_release)
+    
+    port_app(repo_dir, "alternative_detailed_payslip", odoo_release)
+    port_app(repo_dir, "simple_payslip_template", odoo_release)
     
     port_app(repo_dir, "hr_payroll_community_demo_data", odoo_release)
