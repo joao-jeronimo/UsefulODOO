@@ -197,7 +197,7 @@ class InstanceInstaller(InstanceSpec):
     
     def get_installed_instance(self):
         self.create_instance()
-        return OdooInstance(instancename)
+        return OdooInstance(self.instancename)
     
     def create_instance(self):
         """
