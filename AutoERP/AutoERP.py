@@ -20,11 +20,11 @@ def create_instance(instancenm, release_num, httpport, suitename, private):
     """
     installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
     inst = installer.get_installed_instance()
-    inst.create_instance()
 
 @cmdline.opermode
 def full_launch_instance(instancenm, release_num, httpport, suitename, private):
-    inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
+    installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
+    inst = installer.get_installed_instance()
     inst.start_instance()
     inst.install_all_apps()
 

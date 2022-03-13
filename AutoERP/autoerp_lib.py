@@ -337,13 +337,13 @@ class OdooInstance(InstanceSpec):
                     #pdb.set_trace()
                     if odoobin_matches is not None:
                         return odoobin_matches[1]
-        def find_suitename(self):
+        def find_suitename():
             self.parse_instance_conf_file()
             return self.instance_confs['suitename']
         # Call super:
         InstanceSpec.__init__(self, instancename)
         self.release_num = find_odoo_release()
-        self.suite = autoerp_lib.SuiteTemplate(find_suitename())
+        self.suite = SuiteTemplate(find_suitename())
         # Initialize attributes:
         ( self.admin_password, ) = (
             admin_password, )
