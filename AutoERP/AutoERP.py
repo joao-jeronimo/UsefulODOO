@@ -14,22 +14,17 @@ def suite_info(suitename):
 
 
 @cmdline.opermode
-def create_instance(release_num, instancenm, httpport, private):
+def create_instance(instancenm, release_num, httpport, suitename, private):
     """
     ** Pass 1  - Call this first, then fetch_suite_repos
     """
-    inst = autoerp_lib.OdooInstance(instancenm, release_num)
-    inst.create_instance(httpport, private)
+    installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
+    inst = installer.get_installed_instance()
+    inst.create_instance()
 
 @cmdline.opermode
-def install_suite(release_num, instancenm, httpport, suitename, private):
+def full_launch_instance(instancenm, release_num, httpport, suitename, private):
     inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
-    inst.install_suite(httpport, private)
-
-@cmdline.opermode
-def full_launch_instance(release_num, instancenm, httpport, suitename, private):
-    inst = autoerp_lib.OdooInstance(instancenm, release_num, suitename)
-    inst.install_suite(httpport, private)
     inst.start_instance()
     inst.install_all_apps()
 
