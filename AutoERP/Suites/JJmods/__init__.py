@@ -22,20 +22,26 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.load_macros()
     pporter.do_preprocess_directory()
 
+APPS_TO_PORT = [
+    { 'name': "payslip_advanced_info_tab",          'exclude_rels': ['11.0', ] },
+    
+    { 'name': "payslip_aggregate_rule",             'exclude_rels': [] },
+    { 'name': "payroll_typesafe_formulas",          'exclude_rels': ['11.0', ] },
+    
+    { 'name': "payslip_effective_dates",            'exclude_rels': ['11.0', ] },
+    { 'name': "payslip_proportional_bases",         'exclude_rels': ['11.0', ] },
+    
+    { 'name': "alternative_detailed_payslip",       'exclude_rels': ['11.0', ] },
+    { 'name': "simple_payslip_template",            'exclude_rels': [] },
+    
+    { 'name': "hr_payroll_community_demo_data",     'exclude_rels': ['11.0', ] },
+    ]
+
 def port_modules_odoo(instance, repo_localname, basedir):
     # Find out Odoo release of the instance:
     odoo_release = instance.release_num
     repo_dir = os.path.join(basedir, repo_localname)
     # Port each app:
-    port_app(repo_dir, "payslip_advanced_info_tab", odoo_release)
-    
-    port_app(repo_dir, "payslip_aggregate_rule", odoo_release)
-    port_app(repo_dir, "payroll_typesafe_formulas", odoo_release)
-    
-    port_app(repo_dir, "payslip_effective_dates", odoo_release)
-    port_app(repo_dir, "payslip_proportional_bases", odoo_release)
-    
-    port_app(repo_dir, "alternative_detailed_payslip", odoo_release)
-    port_app(repo_dir, "simple_payslip_template", odoo_release)
-    
-    port_app(repo_dir, "hr_payroll_community_demo_data", odoo_release)
+    for app in APPS_TO_PORT:
+        if odoo_release not in app['exclude_rels']:
+            port_app(repo_dir, app['name'], odoo_release)

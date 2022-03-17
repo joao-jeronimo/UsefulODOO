@@ -72,14 +72,13 @@ class SuiteTemplate:
                     ])
                 os.chdir(previous_wd)
         elif repospec['type'] == 'included':
-            if instance.release_num in repospec['odoo_releases']:
-                srcpath = os.path.join(self.suitepath(), (repospec['srcpath'])%{ 'odoo_rel': instance.release_num, } )
-                subprocess.check_output([
-                    "cp",
-                    "-Rv",
-                    srcpath,
-                    destpath,
-                    ])
+            srcpath = os.path.join(self.suitepath(), (repospec['srcpath'])%{ 'odoo_rel': instance.release_num, } )
+            subprocess.check_output([
+                "cp",
+                "-Rv",
+                srcpath,
+                destpath,
+                ])
     
     def run_hook(self, instance, repo, hookname, basedir):
         # Get name of function to call:
@@ -100,40 +99,44 @@ class SuiteTemplate:
     
     def get_module_paths(self, instance):
         """
-        Fetches all suite repositories, returning the resulting paths of the fetched modules.
+        Gets a list of suite repositories module paths.
         """
         all_suite_repos = self.suitemanifest['repositories']
         basedir = instance.get_instance_repos_path()
         # Fetch the repos, building and collecting the resulting paths for return:
         all_module_paths = []
         for this_repo in all_suite_repos:
-            repo_root = os.path.join(basedir, this_repo['localname'])
-            for this_modpath in this_repo['modpaths']:
-                all_module_paths.append(os.path.join(repo_root, this_modpath))
+            if instance.release_num in this_repo['odoo_releases']:
+                repo_root = os.path.join(basedir, this_repo['localname'])
+                for this_modpath in this_repo['modpaths']:
+                    this_modpath = (this_modpath % { 'odoo_rel': instance.release_num, )
+                    all_module_paths.append(os.path.join(repo_root, this_modpath))
         return all_module_paths
     
     def do_fetch_suite_repos(self, instance):
         """
-        Fetches all suite repositories, returning the resulting paths of the fetched modules.
+        Fetches suite repositories, one by one.
         """
         all_suite_repos = self.suitemanifest['repositories']
         basedir = instance.get_instance_repos_path()
         self.create_suite_folders(basedir)
         # Fetch the repos, building and collecting the resulting paths for return:
         for this_repo in all_suite_repos:
-            repo_root = os.path.join(basedir, this_repo['localname'])
-            self._fetch_repo_to ( this_repo, instance, repo_root )
+            if instance.release_num in this_repo['odoo_releases']:
+                repo_root = os.path.join(basedir, this_repo['localname'])
+                self._fetch_repo_to ( this_repo, instance, repo_root )
     
     def do_prepare_suite_repos(self, instance):
         """
-        Run all post-fetch hooks:
+        Run all post-fetch hooks.
         """
         all_suite_repos = self.suitemanifest['repositories']
         basedir = instance.get_instance_repos_path()
         # Fetch the repos, building and collecting the resulting paths for return:
         for this_repo in all_suite_repos:
-            # Run the post-fetch hook for this repository:
-            self.run_hook(instance, this_repo, "post_fetch_hook", basedir)
+            if instance.release_num in this_repo['odoo_releases']:
+                # Run the post-fetch hook for this repository:
+                self.run_hook(instance, this_repo, "post_fetch_hook", basedir)
 
 ####################################################################################
 ##### Wrapping Commmand Execution:     #############################################

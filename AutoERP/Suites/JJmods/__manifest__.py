@@ -19,7 +19,7 @@
             # Python function to port the modules after clone/checkout.
             'post_fetch_hook':  "port_modules_odoo",
             'modpaths': [
-                "0_Installable/15.0",
+                "0_Installable/%(odoo_rel)s",
                 ],
             },
         ],
