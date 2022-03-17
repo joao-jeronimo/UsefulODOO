@@ -53,23 +53,33 @@ class SuiteTemplate:
     def _fetch_repo_to(self, repospec, instance, destpath):
         if repospec['type'] == 'git':
             #git.Repo.clone("--single-branch", "-b", repospec['branch'], repospec['url'], destpath)
-            subprocess.check_output([
-                "git",
-                "clone",
-                "--single-branch",
-                "-b",
-                repospec['branch'],
-                repospec['url'],
-                destpath,
-                ])
+            if not os.path.isdir(destpath):
+                subprocess.check_output([
+                    "git",
+                    "clone",
+                    "--single-branch",
+                    "-b",
+                    repospec['branch'],
+                    repospec['url'],
+                    destpath,
+                    ])
+            else:
+                previous_wd = os.getcwd()
+                os.chdir(destpath)
+                subprocess.check_output([
+                    "git",
+                    "pull",
+                    ])
+                os.chdir(previous_wd)
         elif repospec['type'] == 'included':
-            srcpath = os.path.join(self.suitepath(), (repospec['srcpath'])%{ 'odoo_rel': instance.release_num, } )
-            subprocess.check_output([
-                "cp",
-                "-Rv",
-                srcpath,
-                destpath,
-                ])
+            if instance.release_num in repospec['odoo_releases']:
+                srcpath = os.path.join(self.suitepath(), (repospec['srcpath'])%{ 'odoo_rel': instance.release_num, } )
+                subprocess.check_output([
+                    "cp",
+                    "-Rv",
+                    srcpath,
+                    destpath,
+                    ])
     
     def run_hook(self, instance, repo, hookname, basedir):
         # Get name of function to call:
