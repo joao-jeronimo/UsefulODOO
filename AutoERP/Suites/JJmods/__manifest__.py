@@ -16,6 +16,7 @@
             'url':              "git@github.com:joao-jeronimo/SimplePayslipTemplate.git",
             'localname':        "SimplePayslipTemplate",
             'branch':           "apps-dev",
+            'odoo_releases':    ["11.0", "12.0", "13.0", "14.0", "15.0", ],
             # Python function to port the modules after clone/checkout.
             'post_fetch_hook':  "port_modules_odoo",
             'modpaths': [
