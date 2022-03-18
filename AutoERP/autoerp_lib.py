@@ -172,7 +172,6 @@ class InstanceSpec:
             ) = (
                 instancename,
             )
-        self.executor = LocalCommandRunner("/bin/python3", self.get_venv_python)
     ### Getting instance paths that depend only on the name:
     def get_instance_folder_path(self):
         return os.path.join(autoerp_lib.INSTANCES_DIR, self.instancename)
@@ -187,10 +186,12 @@ class InstanceSpec:
     def get_instance_logfile_path(self):
         return os.path.join(os.path.sep, 'odoo', 'logs', 'odoo-%s.log' % (self.instancename,), )
     ### Getting instance paths that depend on other attributes:
+    def get_venv_path(self):
+        return os.path.join(os.path.sep, "odoo", "VirtualEnvs", self.get_venv_name())
+    def get_venv_python(self):
+        return os.path.join(self.get_venv_path(), "bin", "python")
     def get_venv_name(self):
         return "Env_Python" + self.get_python_version() + "_Odoo" + self.release_num
-    def get_venv_python(self):
-        return os.path.join(os.path.sep, "odoo", "VirtualEnvs", self.get_venv_name())
     ### Getting other important information about the instance:
     def get_python_version(self):
         if self.release_num in RELEASE_PYVER.keys():
@@ -200,13 +201,14 @@ class InstanceSpec:
 
 class InstanceInstaller(InstanceSpec):
     def __init__(self, instancename, release_num, suitename, httpport, private):
-        # Call super:
-        InstanceSpec.__init__(self, instancename)
-        # Initialize other vars:
+        # Initialize immediate vars:
         ( self.release_num, self.httpport, self.private, ) = (
             release_num, httpport, private, )
+        # Call super:
+        InstanceSpec.__init__(self, instancename)
         # Instanciate the suite of the instance:
         self.suite = autoerp_lib.SuiteTemplate(suitename)
+        self.executor = LocalCommandRunner("/bin/python3", self.get_venv_python())
     
     def get_installed_instance(self):
         self.create_instance()
@@ -366,6 +368,7 @@ class OdooInstance(InstanceSpec):
         # Fill-in holes:
         self.parse_config_file()
         self.addons_path = self.cfgman.get('addons_path')
+        self.executor = LocalCommandRunner("/bin/python3", self.get_venv_python())
     
     ### Parsing files:
     def parse_config_file(self):
