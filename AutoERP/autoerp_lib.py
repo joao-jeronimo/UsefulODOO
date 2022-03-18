@@ -109,7 +109,7 @@ class SuiteTemplate:
             if instance.release_num in this_repo['odoo_releases']:
                 repo_root = os.path.join(basedir, this_repo['localname'])
                 for this_modpath in this_repo['modpaths']:
-                    this_modpath = (this_modpath % { 'odoo_rel': instance.release_num, )
+                    this_modpath = (this_modpath % { 'odoo_rel': instance.release_num, })
                     all_module_paths.append(os.path.join(repo_root, this_modpath))
         return all_module_paths
     

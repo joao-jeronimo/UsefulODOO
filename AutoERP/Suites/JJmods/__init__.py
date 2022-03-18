@@ -26,7 +26,7 @@ APPS_TO_PORT = [
     { 'name': "payslip_advanced_info_tab",          'exclude_rels': ['11.0', ] },
     
     { 'name': "payslip_aggregate_rule",             'exclude_rels': [] },
-    { 'name': "payroll_typesafe_formulas",          'exclude_rels': ['11.0', ] },
+    { 'name': "payroll_typesafe_formulas",          'exclude_rels': [] },
     
     { 'name': "payslip_effective_dates",            'exclude_rels': ['11.0', ] },
     { 'name': "payslip_proportional_bases",         'exclude_rels': ['11.0', ] },
