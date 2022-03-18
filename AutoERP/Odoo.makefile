@@ -57,7 +57,7 @@ $(SYSTEMD_PATH)/odoo-$(INSTANCENM).service:  | $(ODROOT)/configs/odoo-$(INSTANCE
 
 $(ODROOT)/configs/odoo-$(INSTANCENM).conf:  | $(ODROOT)/releases/$(ODOO_REL) $(ODROOT)/configs $(ODROOT)/stages/sql_user_created
 	@echo "Installing config file $@..."
-	@sed 's/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/LISTEN_ON/$(LISTEN_ON)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(SEDABLE_ODROOT)/g;s/HTTPPORT/$(HTTPPORT)/g;s/INSTANCE_MODFOLDERS/$(SEDABLE_INSTANCE_MODFOLDERS)/g' template.conf > "$@"
+	@sed 's/INSTANCENM/$(INSTANCENM)/g;s/ODOO_USERNAME/$(ODOO_USERNAME)/g;s/LISTEN_ON/$(LISTEN_ON)/g;s/ODOO_REL/$(ODOO_REL)/g;s/ODROOT/$(SEDABLE_ODROOT)/g;s/HTTPPORT/$(HTTPPORT)/g;s/INSTANCE_MODFOLDERS/$(SEDABLE_INSTANCE_MODFOLDERS)/g;s/WITHOUT_DEMO/$(WITHOUT_DEMO)/g' template.conf > "$@"
 
 ifeq ($(ODOO_FETCH_FULL),yes)
 

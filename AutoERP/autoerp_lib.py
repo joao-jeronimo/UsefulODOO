@@ -234,6 +234,7 @@ class InstanceInstaller(InstanceSpec):
         make_vars = {
             'ODOO_REL'              : odoo_rel,
             'INSTANCENM'            : instancenm,
+            'WITHOUT_DEMO'          : "False" if instancenm.endswith("demodevel") else "True",
             'LISTEN_ON'             : listen_on,
             'HTTPPORT'              : httpport,
             'WKHTMLTOPDF_VERSION'   : wkhtmltopdf_version,
