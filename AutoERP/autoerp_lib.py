@@ -299,7 +299,9 @@ class InstanceInstaller(InstanceSpec):
         self.executor.runCommand([ "sudo", "apt-get", "--fix-broken", "install", "-y" ])
     def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
         self.executor.install_or_upgrade_system_pip_package([ "pip", "wheel", ])
-        self.executor.runCommand([ "sudo", "pip3", "install", "--ignore-installed", "--no-binary", ":all:", "psycopg2", ])
+        self.executor.install_or_upgrade_venv_pip_package([ "wheel", ])
+        #self.executor.runCommand([ "sudo", "pip3", "install", "--ignore-installed", "--no-binary", ":all:", "psycopg2", ])
+        self.executor.runCommand([ "sudo", "pip3", "install", "psycopg2", ])
     
     def _lowlevel_create_instance(self, httpport, instance_modfolders, private):
         # Process args:
