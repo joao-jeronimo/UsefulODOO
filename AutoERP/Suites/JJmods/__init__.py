@@ -34,7 +34,7 @@ APPS_TO_PORT = [
     { 'name': "alternative_detailed_payslip",       'exclude_rels': ['11.0', ] },
     { 'name': "simple_payslip_template",            'exclude_rels': [] },
     
-    { 'name': "hr_payroll_community_demo_data",     'exclude_rels': ['11.0', ] },
+    { 'name': "hr_payroll_community_demo_data",     'exclude_rels': [] },
     ]
 
 def port_modules_odoo(instance, repo_localname, basedir):
