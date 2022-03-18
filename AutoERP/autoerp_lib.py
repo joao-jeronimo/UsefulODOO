@@ -401,7 +401,12 @@ class OdooInstance(InstanceSpec):
                 })
         return conn_parms
     
-    def get_communicator(self, username="admin", user_id=2):
+    def get_communicator(self, username="admin", user_id=False):
+        if not user_id:
+            if float(self.release_num) >= float("12.0"):
+                user_id = 2
+            else:
+                user_id = 1
         return util_odoo.OdooCommunicator(self.get_odoo_connection_params(username, user_id))
     
     def start_instance(self):
