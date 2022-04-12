@@ -10,6 +10,7 @@ odoo_config_parser = importlib.import_module( "odoo.tools.config" )
 
 # Important constants:
 ODOO_ROOT = os.path.join(os.path.sep, "odoo")
+PYVENV_BIN = "pyvenv"
 SUITE_TEMPLATE_DIR = os.path.join(os.path.curdir, "Suites")
 INSTANCES_DIR = os.path.join(ODOO_ROOT, "Instances")
 REPOS_SUBFOLDER_NAME = "SuiteRepos"
@@ -296,9 +297,28 @@ class InstanceInstaller(InstanceSpec):
         srcurl = "https://github.com/wkhtmltopdf/packaging/releases/download/%(version)s/wkhtmltox_%(version)s.%(debian_codename)s_amd64.deb" % params_dict
         destfile = "/tmp/wkhtmltox_%(version)s.%(debian_codename)s_amd64.deb" % params_dict
         # Get deb file:
-        self.executor.runCommand([ "sudo", "wget", "-c", srcurl, "-O", destfile, ])
+        if not os.path.isfile(destfile):
+            self.executor.runCommand([ "sudo", "wget", "-c", srcurl, "-O", destfile, ])
         self.executor.runCommand([ "sudo", "dpkg", "-i", destfile, ])
         self.executor.runCommand([ "sudo", "apt-get", "--fix-broken", "install", "-y" ])
+    def _lowlevel_create_virtual_env(self, python_major_version, python_minor_version, odoo_rel):
+        virtualenv_name = "Env_Python%(pymajor)s.%(pyminor)s_Odoo%(odoo_rel)s" % {
+            'pymajor'      : python_major_version,
+            'pyminor'      : python_minor_version,
+            'odoo_rel'      : odoo_rel,
+            }
+        virtualenv_path = os.path.join(ODOO_ROOT, "VirtualEnvs", virtualenv_name)
+        # Do the installation:
+        #self.executor.runCommand([
+        #    PYVENV_BIN,
+        #    "--python=/usr/bin/python%(pymajor)d.%(pyminor)d" % { 'pymajor' : python_major_version, 'pyminor' : python_minor_version, },
+        #    virtualenv_path,
+        #    ])
+        self.executor.runCommand([
+            "python%(pymajor)s.%(pyminor)s" % { 'pymajor' : python_major_version, 'pyminor' : python_minor_version, },
+            "-m", "venv",
+            virtualenv_path,
+            ])
     def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
         self.executor.install_or_upgrade_system_pip_package([ "pip", "wheel", ])
         self.executor.install_or_upgrade_venv_pip_package([ "wheel", ])
@@ -306,6 +326,7 @@ class InstanceInstaller(InstanceSpec):
         self.executor.runCommand([ "sudo", "pip3", "install", "psycopg2", ])
     
     def _lowlevel_create_instance(self, httpport, instance_modfolders, private):
+        #pdb.set_trace()
         # Process args:
         python_version = self.get_python_version()
         python_major_version    = python_version.split('.')[0]
@@ -314,10 +335,10 @@ class InstanceInstaller(InstanceSpec):
         self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
         #self._lowlevel_install_wkhtmltopdf("0.12.6-1", "buster")
         self._lowlevel_install_wkhtmltopdf("0.12.6-1", "focal")
+        self._lowlevel_create_virtual_env(python_major_version, python_minor_version, self.release_num)
         self._lowlevel_install_python_deps(python_major_version, python_minor_version)
         # A list of targets to run:
         TARGETS_TO_RUN = [
-            "prepare_virtualenv",
             "prepare_all",
             ]
         # Prepare parameters:
@@ -332,10 +353,14 @@ class InstanceInstaller(InstanceSpec):
             python_minor_version    = python_minor_version,
             instance_modfolders     = ",".join(instance_modfolders),
             pythonlibs_dir          = "/odoo/PythonLibs",
-            targetnames             = " ".join(TARGETS_TO_RUN),
             )
-        # Run all the needed targets:
-        self._call_makefile(**makefile_params)
+        for onetarget in TARGETS_TO_RUN:
+            # Run all the needed targets:
+            self._call_makefile(**{
+                **makefile_params,
+                },
+                targetnames = onetarget,
+                )
     
     def purge_instance(self, keep_code=False):
         self.stop_instance()
