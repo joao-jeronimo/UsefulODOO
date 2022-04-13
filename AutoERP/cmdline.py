@@ -61,10 +61,13 @@ def parse_and_do(argv):
     
     # Parse full comand line, then print arguments:
     args = parser.parse_args()
-    print(args)
-    # Get list of arguments of the fcuntion that we need to call:
+    #print(args)
+    # Get list of arguments of the function that we need to call:
+    if 'func' not in dir(args):
+        parser.print_help()
+        return
     function_args = list(inspect.signature(args.func).parameters)
-    # Create dictionary that only contains the function-spacific commands:
+    # Create dictionary that only contains the function-specific commands:
     args_to_subcommand = dict([
         (func_arg, getattr(args, func_arg))
         for func_arg in function_args
