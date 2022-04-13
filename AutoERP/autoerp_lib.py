@@ -151,6 +151,19 @@ class AbstractCommandRunner:
     
     def apt_update(self):
         self.runCommand([ "sudo", "apt-get", "update", ])
+    def dpkg_list(self):
+        list_results = self.runCommand([ "dpkg", "-l", ], stdout=subprocess.PIPE).stdout
+        linez = str(list_results).split("\n")
+        # Find the ====== separator:
+        list_start_lin = 0
+        while len([ cr for cr in linez[list_start_lin] if cr=='=' ]) < 10:
+            list_start_lin += 1
+        list_start_lin += 1
+        return [
+            ln.split()[1]
+            for ln in linez[list_start_lin:]
+            ]
+    
     def install_or_upgrade_apt_packages(self, packagelist):
         self.runCommand([ "sudo", "apt-get", "install", "-y", *packagelist, ])
     def install_or_upgrade_apt_build_deps(self, packagelist):
@@ -290,6 +303,9 @@ class InstanceInstaller(InstanceSpec):
         @apt-get --fix-broken install -y
         @touch $@
         """
+        if 'wkhtmltox' not in self.executor.dpkg_list():
+            print("Skipping WkHtmlToX installation - already installed.")
+            return
         params_dict = {
             'version':              version,
             'debian_codename':      debian_codename,
