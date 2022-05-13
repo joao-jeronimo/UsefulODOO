@@ -34,5 +34,7 @@
         { 'name': 'payslip_effective_dates',        'active': True, },
         { 'name': 'payslip_advanced_info_tab',      'active': True, },
         { 'name': 'payslip_proportional_bases',     'active': True, },
+        
+        #{ 'name': 'hr_payroll_community_demo_data', 'active': True, },
         ],
 }
