@@ -23,15 +23,15 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
-    { 'name': "payslip_advanced_info_tab",          'exclude_rels': ['11.0', '12.0', '13.0', '14.0', ] },
+    { 'name': "payslip_advanced_info_tab",          'exclude_rels': ['11.0', '12.0', '13.0', ] },
     
     { 'name': "payslip_aggregate_rule",             'exclude_rels': [] },
     { 'name': "payroll_typesafe_formulas",          'exclude_rels': [] },
     
-    { 'name': "payslip_effective_dates",            'exclude_rels': ['11.0', '12.0', '13.0', '14.0', ] },
-    { 'name': "payslip_proportional_bases",         'exclude_rels': ['11.0', '12.0', '13.0', '14.0', ] },
+    { 'name': "payslip_effective_dates",            'exclude_rels': ['11.0', '12.0', '13.0', ] },
+    { 'name': "payslip_proportional_bases",         'exclude_rels': ['11.0', '12.0', '13.0', ] },
     
-    { 'name': "alternative_detailed_payslip",       'exclude_rels': ['11.0', '12.0', '13.0', '14.0', ] },
+    { 'name': "alternative_detailed_payslip",       'exclude_rels': ['11.0', '12.0', '13.0',  ] },
     { 'name': "simple_payslip_template",            'exclude_rels': [] },
     
     { 'name': "hr_payroll_community_demo_data",     'exclude_rels': [] },

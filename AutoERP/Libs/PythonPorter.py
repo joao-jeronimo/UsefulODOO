@@ -15,7 +15,11 @@ class PythonPorter:
     
     def load_macros(self):
         # Load list of macros:
-        all_macro_keys = os.listdir(self.macrodir)
+        all_macro_keys = [
+            macroname
+            for macroname in os.listdir(self.macrodir)
+            if not macroname.startswith('.')
+            ]
         self.macroes_dikt = {}
         # Load all macroes on-at-a-time:
         for this_macro_key in all_macro_keys:
