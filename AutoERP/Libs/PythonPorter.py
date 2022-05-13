@@ -7,7 +7,7 @@ class BinaryFileException(BaseException):
 class PythonPorter:
     macroes_dikt = {}
     
-    def __init__(self, macrodir, sourcedir, destdir, filename_regex="(.*\.py|.*\.xml|.*\.csv|.*\.po|.*\.pot)$"):
+    def __init__(self, macrodir, sourcedir, destdir, filename_regex="/[^/.][^/]*(.*\.py|.*\.xml|.*\.csv|.*\.po|.*\.pot)$"):
         self.macrodir       = macrodir
         self.sourcedir      = sourcedir
         self.destdir        = destdir
@@ -35,10 +35,17 @@ class PythonPorter:
         srcfile = open(filename, "r")
         srctxt = srcfile.read()
         srcfile.close()
-        # Apply all macroes:
+        # Apply all macroes - many time until no replacements rests:
         dsttxt = srctxt
-        for macrokey in self.macroes_dikt.keys():
-            dsttxt = dsttxt.replace(macrokey, self.macroes_dikt[macrokey])
+        while True:
+            n_replacements = 0
+            for macrokey in self.macroes_dikt.keys():
+                new_dsttxt = dsttxt.replace(macrokey, self.macroes_dikt[macrokey])
+                if dsttxt != new_dsttxt:
+                    n_replacements += 1
+                dsttxt = new_dsttxt
+            if n_replacements == 0:
+                break
         return dsttxt
     
     def preprocess_find_output(self, find_output):
