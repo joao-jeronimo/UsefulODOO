@@ -1,0 +1,4 @@
+odoo-client-lib
+ezodf
+odoo-import-export-client
+gitpython
