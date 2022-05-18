@@ -483,7 +483,7 @@ class OdooInstance(InstanceSpec):
         thecomm.update_modules_list()
         suitemanifest = self.suite.suite_info()
         for appspec in suitemanifest['modules']:
-            if appspec['active']:
+            if appspec['active'] == True or self.release_num in appspec['active']:
                 thecomm.install_module(appspec['name'])
 
 class NginxInstance:

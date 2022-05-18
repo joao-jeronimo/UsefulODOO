@@ -25,16 +25,20 @@
             },
         ],
     'modules':  [
-        { 'name': 'hr_contract_types',              'active': True, },
-        { 'name': 'hr_payroll_community',           'active': True, },
-        
-        { 'name': 'alternative_detailed_payslip',   'active': True, },
+        # Base apps:
+        { 'name': 'hr_payroll',                     'active': ["11.0", "12.0",                         ], },
+        { 'name': 'hr_payroll_community',           'active': [                "13.0", "14.0", "15.0", ], },
+        { 'name': 'hr_contract_types',              'active': [                "13.0", "14.0", "15.0", ], },
+        # Generic features:
         { 'name': 'payslip_aggregate_rule',         'active': True, },
         { 'name': 'payroll_typesafe_formulas',      'active': True, },
         { 'name': 'payslip_effective_dates',        'active': True, },
         { 'name': 'payslip_advanced_info_tab',      'active': True, },
         { 'name': 'payslip_proportional_bases',     'active': True, },
-        
-        #{ 'name': 'hr_payroll_community_demo_data', 'active': True, },
+        # PDF templates:
+        { 'name': 'alternative_detailed_payslip',   'active': True, },
+        { 'name': 'simple_payslip_template',        'active': True, },
+        # Demo data and tests:
+        { 'name': 'hr_payroll_community_demo_data', 'active': True, },
         ],
 }
