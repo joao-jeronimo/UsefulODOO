@@ -330,11 +330,13 @@ class InstanceInstaller(InstanceSpec):
         #    "--python=/usr/bin/python%(pymajor)d.%(pyminor)d" % { 'pymajor' : python_major_version, 'pyminor' : python_minor_version, },
         #    virtualenv_path,
         #    ])
-        self.executor.runCommand([
-            "python%(pymajor)s.%(pyminor)s" % { 'pymajor' : python_major_version, 'pyminor' : python_minor_version, },
-            "-m", "venv",
-            virtualenv_path,
-            ])
+        print("Virtual environment path: " + virtualenv_path)
+        if not os.path.isdir(virtualenv_path):
+            self.executor.runCommand([
+                "python%(pymajor)s.%(pyminor)s" % { 'pymajor' : python_major_version, 'pyminor' : python_minor_version, },
+                "-m", "venv",
+                virtualenv_path,
+                ])
     def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
         self.executor.install_or_upgrade_system_pip_package([ "pip", "wheel", ])
         self.executor.install_or_upgrade_venv_pip_package([ "wheel", ])
@@ -349,10 +351,22 @@ class InstanceInstaller(InstanceSpec):
         python_minor_version    = python_version.split('.')[1]
         # Install/upgrade required Debian and Python dependencies:
         self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
+        print("========================================")
+        print("=== Installing WkHtmlToX:         ======")
+        print("========================================")
         #self._lowlevel_install_wkhtmltopdf("0.12.6-1", "buster")
         self._lowlevel_install_wkhtmltopdf("0.12.6-1", "focal")
+        print("========================================")
+        print("=== Creating virtual environment: ======")
+        print("========================================")
         self._lowlevel_create_virtual_env(python_major_version, python_minor_version, self.release_num)
+        print("==================================================")
+        print("=== Installing Python dependencies via pip: ======")
+        print("==================================================")
         self._lowlevel_install_python_deps(python_major_version, python_minor_version)
+        print("=========================================")
+        print("=== Odoo instance creation proper: ======")
+        print("=========================================")
         # A list of targets to run:
         TARGETS_TO_RUN = [
             "prepare_all",
