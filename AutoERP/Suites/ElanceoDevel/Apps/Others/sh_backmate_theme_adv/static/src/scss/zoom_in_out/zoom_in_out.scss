@@ -1,0 +1,31 @@
+.sh_zoom_view_layout{position: fixed !important;top: 40%;right: 0;z-index: 9;padding-left: 0px !important;padding-right: 0px !important;}
+.sh_zoom_view_layout .btn.sh_zoom{box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.01), 0 6px 10px -5px $primaryColor !important;background: $primaryColor;color: #fff;}
+.sh_zoom_view_layout .sh-zoom-panel{position: absolute;top: 100%;right: 0px;z-index: 2;background: #ffffff;border: 1px solid #eeeeee;padding: 0px 0px 0px 10px;box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.10), 0 3px 6px 0px rgba(0, 0, 0, 0.10) !important;}
+.sh_zoom_view_layout .sh-zoom-panel .sh_dec,.sh_zoom_view_layout .sh-zoom-panel .sh_inc{padding: 0.5rem 0.55rem;font-weight: bold;}
+.sh_zoom_view_layout .sh-zoom-panel .sh_dec:hover,.sh_zoom_view_layout .sh-zoom-panel .sh_dec:focus,
+.sh_zoom_view_layout .sh-zoom-panel .sh_inc:hover,.sh_zoom_view_layout .sh-zoom-panel .sh_inc:focus{color: $primaryColor;box-shadow: none;}
+
+.sh_zoom_110{width: 90.9%;flex: 0 0 90.9%;transform: scale(1.1);transform-origin: 0 0;}
+.sh_zoom_120{width: 83.3%;flex: 0 0 83.3%;transform: scale(1.2);transform-origin: 0 0;}
+.sh_zoom_130{width: 76.9%;flex: 0 0 76.9%;transform: scale(1.3);transform-origin: 0 0;}
+.sh_zoom_140{width: 71.4%;flex: 0 0 71.4%;transform: scale(1.4);transform-origin: 0 0;}
+.sh_zoom_150{width: 66.6%;flex: 0 0 66.6%;transform: scale(1.5);transform-origin: 0 0;}
+.sh_zoom_160{width: 62.5%;flex: 0 0 62.5%;transform: scale(1.6);transform-origin: 0 0;}
+.sh_zoom_170{width: 58.8%;flex: 0 0 58.8%;transform: scale(1.7);transform-origin: 0 0;}
+.sh_zoom_180{width: 55.5%;flex: 0 0 55.5%;transform: scale(1.8);transform-origin: 0 0;}
+.sh_zoom_190{width: 52.6%;flex: 0 0 52.6%;transform: scale(1.9);transform-origin: 0 0;}
+.sh_zoom_200{width: 50%;flex: 0 0 50%;transform: scale(2);transform-origin: 0 0;}
+
+.sh_zoom_90{width: 111%;flex: 0 0 111%;transform: scale(0.9);/*transform-origin: left top;*/transform-origin: 0 0;}
+.sh_zoom_80{width: 125%;flex: 0 0 125%;transform: scale(0.8);transform-origin: 0 0;}
+.sh_zoom_70{width: 142.8%;flex: 0 0 142.8%;transform: scale(0.7);transform-origin: 0 0;}
+.sh_zoom_60{width: 166.6%;flex: 0 0 166.6%;transform: scale(0.6);transform-origin: 0 0;}
+.sh_zoom_50{width: 200%;flex: 0 0 200%;transform: scale(0.5);transform-origin: 0 0;}
+.sh_zoom_40{width: 250%;flex: 0 0 250%;transform: scale(0.4);transform-origin: 0 0;}
+.sh_zoom_30{width: 333%;flex: 0 0 333%;transform: scale(0.3);transform-origin: 0 0;}
+.sh_zoom_20{width: 500%;flex: 0 0 500%;transform: scale(0.2);transform-origin: 0 0;}
+
+
+@media only screen and (max-width: 992px){
+    .sh_zoom_view_layout{display: none !important;}
+}

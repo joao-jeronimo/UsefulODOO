@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ################################################# -->
+        <!-- ##  Regras salariais        ##################### -->
+        <!-- ################################################# -->
+        
+        <!-- Salário-base -->
+        <record id="hr_rule_basic" model="hr.salary.rule">
+            <field name="active">True</field>
+            <field name="name">Vencimento Base</field>
+            <field name="code">BASIC</field>
+            <field name="appears_on_payslip">True</field>
+            <field name="sequence">1</field>
+            <field name="category_id" search="[('code', '=', 'BASIC')]" />
+            <field name="register_id" ref="hr_payroll.contrib_register_employees" />
+            
+            <!-- Condição: -->
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = not(contract.on_unpaid_leave)</field>
+            <!-- Cálculo: -->
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# This rule will depend on the number of days covered by the payslip. Not the number of days
+# covered by the contract nor the number of covered week days. That's why: the employee may
+# enter of leave the company in the middle of the month.
+MONTH_MAX_DAYS = payslip.dict.month_max_days()
+PAYSLIP_NUM_DAYS = payslip.dict.payslip_num_days()
+if MONTH_MAX_DAYS==PAYSLIP_NUM_DAYS:
+    result_qty = 1
+    # Here we don't include diuturnity bonus because on normal
+    # salaries it is included by another rule:
+    result = contract.wage
+else:
+    result_qty = PAYSLIP_NUM_DAYS
+    result = contract.wage/MONTH_MAX_DAYS
+</field>
+        </record>
+        
+        <!-- Bruto -->
+        <record id="hr_rule_taxable" model="hr.salary.rule">
+            <field name="active">True</field>
+            <field name="name">Total bruto</field>
+            <field name="code">GROSS</field>
+            <field name="appears_on_payslip">True</field>
+            <field name="sequence">100</field>
+            <field name="category_id" search="[('code', '=', 'GROSS')]" />
+            <!--<field name="register_id" ref="" />-->
+            
+            <!-- Condição: -->
+            <field name="condition_select">none</field>
+            <!-- Cálculo: -->
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = max(0, categories.BASIC + categories.ALW - categories.DED)</field>
+        </record>
+        
+        <!-- Super-Bruto -->
+        <record id="hr_rule_supergross" model="hr.salary.rule">
+            <field name="active">True</field>
+            <field name="name">Total super-bruto</field>
+            <field name="code">SUPER_GROSS</field>
+            <field name="appears_on_payslip">False</field>
+            <field name="sequence">200</field>
+            <field name="category_id" search="[('code', '=', 'OUTROS_AGREGADOS')]" />
+            <!--<field name="register_id" ref="" />-->
+            
+            <!-- Condição: -->
+            <field name="condition_select">none</field>
+            <!-- Cálculo: -->
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.GROSS + categories.COMP</field>
+        </record>
+        
+        <!-- Líquido: -->
+        <record id="hr_rule_net" model="hr.salary.rule">
+            <field name="active">True</field>
+            <field name="name">Líquido a receber</field>
+            <field name="code">NET</field>
+            <field name="appears_on_payslip">True</field>
+            <field name="sequence">200</field>
+            <field name="category_id" search="[('code', '=', 'NET')]" />
+            <!--<field name="register_id" ref="hr_payroll.contrib_register_employees" />-->
+            
+            <!-- Condição: -->
+            <field name="condition_select">none</field>     <!-- Always True -->
+            <!-- Cálculo: -->
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = max(0, categories.GROSS - categories.IMPOSTOS + categories.FINAL_ALW - categories.FINAL_DED)</field>
+        </record>
+
+    </data>
+</odoo>
