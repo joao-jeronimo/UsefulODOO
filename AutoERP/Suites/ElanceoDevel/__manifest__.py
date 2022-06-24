@@ -4,7 +4,7 @@
     'repositories': [
         {
             'type':             "included",
-            'srcpath':          "./Apps/Others/%(odoo_rel)s",
+            'srcpath':          "./IncludedApps/%(odoo_rel)s",
             'localname':        "Others",
             'odoo_releases':    ["14.0", ],
             'modpaths': [
@@ -13,6 +13,6 @@
             },
         ],
     'modules':  [
-        { 'name': 'hr_contract_types',              'active': True, },
+        #{ 'name': 'hr_contract_types',              'active': False, },
         ],
 }
