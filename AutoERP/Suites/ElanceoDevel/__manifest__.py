@@ -1,6 +1,5 @@
 {
     'name':         "Ajuda devel Elanceo - Odoo14",
-    'odoo_branch':  "14.0",
     'repositories': [
         {
             'type':             "included",

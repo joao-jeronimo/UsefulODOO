@@ -1,6 +1,5 @@
 {
-    'name':         "JJ Modules for payroll and so - Odoo15",
-    'odoo_branch':  "15.0",
+    'name':         "JJ Modules for payroll and so",
     'repositories': [
         {
             'type':             "included",
@@ -37,7 +36,7 @@
         { 'name': 'payslip_proportional_bases',     'active': True, },
         # PDF templates:
         { 'name': 'alternative_detailed_payslip',   'active': True, },
-        { 'name': 'alternative_french_payslip',     'active': [                                "15.0", ], },
+        { 'name': 'alternative_french_payslip',     'active': True, },
         { 'name': 'simple_payslip_template',        'active': True, },
         # Demo data and tests:
         { 'name': 'hr_payroll_community_demo_data', 'active': True, },

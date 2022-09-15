@@ -1,6 +1,5 @@
 {
     'name':         "JJ Modules for payroll and so - Odoo15",
-    'odoo_branch':  "15.0",
     'repositories': [
         {
             'type':             "git",
