@@ -37,6 +37,7 @@
         { 'name': 'payslip_proportional_bases',     'active': True, },
         # PDF templates:
         { 'name': 'alternative_detailed_payslip',   'active': True, },
+        { 'name': 'alternative_french_payslip',     'active': [                                "15.0", ], },
         { 'name': 'simple_payslip_template',        'active': True, },
         # Demo data and tests:
         { 'name': 'hr_payroll_community_demo_data', 'active': True, },

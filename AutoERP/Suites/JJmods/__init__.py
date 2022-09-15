@@ -32,6 +32,7 @@ APPS_TO_PORT = [
     { 'name': "payslip_proportional_bases",         'exclude_rels': [] },
     
     { 'name': "alternative_detailed_payslip",       'exclude_rels': [] },
+    { 'name': "alternative_french_payslip",         'exclude_rels': [] },
     { 'name': "simple_payslip_template",            'exclude_rels': [] },
     
     { 'name': "hr_payroll_community_demo_data",     'exclude_rels': [] },
