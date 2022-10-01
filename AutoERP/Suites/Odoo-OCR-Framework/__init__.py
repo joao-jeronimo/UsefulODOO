@@ -23,7 +23,7 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
-    { 'name': "tesseract_wrapper",                      'exclude_rels': [] },
+    { 'name': "tesseract_ocr_wrapper",                      'exclude_rels': [] },
     ]
 
 def port_modules_odoo(instance, repo_localname, basedir):
