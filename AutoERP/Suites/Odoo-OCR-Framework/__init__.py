@@ -23,6 +23,7 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
+    { 'name': "dynamic_attachments",                      'exclude_rels': [] },
     { 'name': "tesseract_ocr_wrapper",                      'exclude_rels': [] },
     ]
 
