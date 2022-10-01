@@ -492,7 +492,7 @@ class OdooInstance(InstanceSpec):
         for appspec in suitemanifest['modules']:
             if appspec['active'] == True or self.release_num in appspec['active']:
                 if always_update:
-                    thecomm.upgrade_module(appspec['name'])
+                    thecomm.install_or_upgrade_module(appspec['name'])
                 else:
                     thecomm.install_module(appspec['name'])
 
