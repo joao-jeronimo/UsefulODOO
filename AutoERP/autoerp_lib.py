@@ -224,11 +224,11 @@ class InstanceInstaller(InstanceSpec):
         self.suite = autoerp_lib.SuiteTemplate(suitename)
         self.executor = LocalCommandRunner("/bin/python3", self.get_venv_python())
     
-    def get_installed_instance(self):
-        self.create_instance()
+    def get_installed_instance(self, skip_os_preparation):
+        self.create_instance(skip_os_preparation)
         return OdooInstance(self.instancename)
     
-    def create_instance(self):
+    def create_instance(self, skip_os_preparation):
         """
         Does a full suite install if it is not already installed.
         """
@@ -237,7 +237,7 @@ class InstanceInstaller(InstanceSpec):
         subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
         all_modulepaths = self.suite.fetch_prepare_suite_repos(self)
-        self._lowlevel_create_instance(self.httpport, all_modulepaths, self.private)
+        self._lowlevel_create_instance(self.httpport, all_modulepaths, self.private, skip_os_preparation)
         # Create instance config folder and file:
         with open(os.path.join(self.get_instance_folder_path(), "instance.conf"), "w") as inst_config_file:
             inst_config_file.write("suitename = %s" % self.suite.suitename)
@@ -317,6 +317,7 @@ class InstanceInstaller(InstanceSpec):
             self.executor.runCommand([ "sudo", "wget", "-c", srcurl, "-O", destfile, ])
         self.executor.runCommand([ "sudo", "dpkg", "-i", destfile, ])
         self.executor.runCommand([ "sudo", "apt-get", "--fix-broken", "install", "-y" ])
+    
     def _lowlevel_create_virtual_env(self, python_major_version, python_minor_version, odoo_rel):
         virtualenv_name = "Env_Python%(pymajor)s.%(pyminor)s_Odoo%(odoo_rel)s" % {
             'pymajor'      : python_major_version,
@@ -337,20 +338,26 @@ class InstanceInstaller(InstanceSpec):
                 "-m", "venv",
                 virtualenv_path,
                 ])
+    
     def _lowlevel_install_python_deps(self, python_major_version, python_minor_version):
         self.executor.install_or_upgrade_system_pip_package([ "pip", "wheel", ])
         self.executor.install_or_upgrade_venv_pip_package([ "wheel", ])
         #self.executor.runCommand([ "sudo", "pip3", "install", "--ignore-installed", "--no-binary", ":all:", "psycopg2", ])
         self.executor.runCommand([ "sudo", "pip3", "install", "psycopg2", ])
     
-    def _lowlevel_create_instance(self, httpport, instance_modfolders, private):
+    def _lowlevel_create_instance(self, httpport, instance_modfolders, private, skip_os_preparation):
         #pdb.set_trace()
         # Process args:
         python_version = self.get_python_version()
         python_major_version    = python_version.split('.')[0]
         python_minor_version    = python_version.split('.')[1]
-        # Install/upgrade required Debian and Python dependencies:
-        self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
+        print("================================================================")
+        print("=== Install/upgrade required Debian dependencies:         ======")
+        print("================================================================")
+        if skip_os_preparation:
+            print("(skipped)")
+        else:
+            self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
         print("========================================")
         print("=== Installing WkHtmlToX:         ======")
         print("========================================")

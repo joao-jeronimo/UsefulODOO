@@ -22,9 +22,9 @@ def create_instance(instancenm, release_num, httpport, suitename, private):
     inst = installer.get_installed_instance()
 
 @cmdline.opermode
-def full_launch_instance(instancenm, release_num, httpport, suitename, private):
+def full_launch_instance(instancenm, release_num, httpport, suitename, private, skip_os_preparation):
     installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
-    inst = installer.get_installed_instance()
+    inst = installer.get_installed_instance(skip_os_preparation)
     inst.start_instance()
     inst.install_all_apps()
 

@@ -31,6 +31,6 @@
         ],
     'modules':  [
         # Base apps:
-        #{ 'name': 'tesseract_wrapper',                  'active': ["15.0", ], },
+        { 'name': 'tesseract_ocr_wrapper',                  'active': ["15.0", ], },
         ],
 }
