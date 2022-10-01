@@ -12,7 +12,7 @@
         #    },
         {
             'type':             "git",
-            'url':              "ggit@github.com:joao-jeronimo/Odoo-OCR.git",
+            'url':              "git@github.com:joao-jeronimo/Odoo-OCR.git",
             'localname':        "Odoo-OCR",
             'branch':           "main",
             'odoo_releases':    [
