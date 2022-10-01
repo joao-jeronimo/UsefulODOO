@@ -484,14 +484,17 @@ class OdooInstance(InstanceSpec):
     def restart_instance(self):
         subprocess.run(['sudo', 'systemctl', 'restart', 'odoo-%s'%self.instancename])
     
-    def install_all_apps(self):
+    def install_all_apps(self, always_update=False):
         thecomm = self.get_communicator()
         thecomm.wait_for_instance_ready()
         thecomm.update_modules_list()
         suitemanifest = self.suite.suite_info()
         for appspec in suitemanifest['modules']:
             if appspec['active'] == True or self.release_num in appspec['active']:
-                thecomm.install_module(appspec['name'])
+                if always_update:
+                    thecomm.upgrade_module(appspec['name'])
+                else:
+                    thecomm.install_module(appspec['name'])
 
 class NginxInstance:
     def __init__(self, odoo_instance):
