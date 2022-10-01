@@ -224,11 +224,16 @@ class InstanceInstaller(InstanceSpec):
         self.suite = autoerp_lib.SuiteTemplate(suitename)
         self.executor = LocalCommandRunner("/bin/python3", self.get_venv_python())
     
-    def get_installed_instance(self, skip_os_preparation):
-        self.create_instance(skip_os_preparation)
+    def get_installed_instance(self, skip_os_preparation=False, skip_venv_creation=False, skip_external_deps=False, skip_config_files=False):
+        self.create_instance(
+            skip_os_preparation=skip_os_preparation,
+            skip_venv_creation=skip_venv_creation,
+            skip_external_deps=skip_external_deps,
+            skip_config_files=skip_config_files,
+            )
         return OdooInstance(self.instancename)
     
-    def create_instance(self, skip_os_preparation):
+    def create_instance(self, skip_os_preparation, skip_venv_creation, skip_external_deps, skip_config_files):
         """
         Does a full suite install if it is not already installed.
         """
@@ -237,7 +242,12 @@ class InstanceInstaller(InstanceSpec):
         subprocess.check_output(["mkdir", "-p", self.get_instance_folder_path(), ])
         # Spawn the suite and fetch repos:
         all_modulepaths = self.suite.fetch_prepare_suite_repos(self)
-        self._lowlevel_create_instance(self.httpport, all_modulepaths, self.private, skip_os_preparation)
+        self._lowlevel_create_instance(self.httpport, all_modulepaths, self.private,
+            skip_os_preparation=skip_os_preparation,
+            skip_venv_creation=skip_venv_creation,
+            skip_external_deps=skip_external_deps,
+            skip_config_files=skip_config_files,
+            )
         # Create instance config folder and file:
         with open(os.path.join(self.get_instance_folder_path(), "instance.conf"), "w") as inst_config_file:
             inst_config_file.write("suitename = %s" % self.suite.suitename)
@@ -345,59 +355,68 @@ class InstanceInstaller(InstanceSpec):
         #self.executor.runCommand([ "sudo", "pip3", "install", "--ignore-installed", "--no-binary", ":all:", "psycopg2", ])
         self.executor.runCommand([ "sudo", "pip3", "install", "psycopg2", ])
     
-    def _lowlevel_create_instance(self, httpport, instance_modfolders, private, skip_os_preparation):
+    def _lowlevel_create_instance(self, httpport, instance_modfolders, private, skip_os_preparation, skip_venv_creation, skip_external_deps, skip_config_files):
         #pdb.set_trace()
         # Process args:
         python_version = self.get_python_version()
         python_major_version    = python_version.split('.')[0]
         python_minor_version    = python_version.split('.')[1]
-        print("================================================================")
-        print("=== Install/upgrade required Debian dependencies:         ======")
-        print("================================================================")
         if skip_os_preparation:
-            print("(skipped)")
+            print("(os preparation skipped)")
         else:
+            print("================================================================")
+            print("=== Install/upgrade required Debian dependencies:         ======")
+            print("================================================================")
             self._lowlevel_install_debian_deps(python_major_version, python_minor_version)
-        print("========================================")
-        print("=== Installing WkHtmlToX:         ======")
-        print("========================================")
-        #self._lowlevel_install_wkhtmltopdf("0.12.6-1", "buster")
-        self._lowlevel_install_wkhtmltopdf("0.12.6-1", "focal")
-        print("========================================")
-        print("=== Creating virtual environment: ======")
-        print("========================================")
-        self._lowlevel_create_virtual_env(python_major_version, python_minor_version, self.release_num)
-        print("==================================================")
-        print("=== Installing Python dependencies via pip: ======")
-        print("==================================================")
-        self._lowlevel_install_python_deps(python_major_version, python_minor_version)
-        print("=========================================")
-        print("=== Odoo instance creation proper: ======")
-        print("=========================================")
-        # A list of targets to run:
-        TARGETS_TO_RUN = [
-            "prepare_all",
-            ]
-        # Prepare parameters:
-        makefile_params = dict(
-            instancenm              = self.instancename,
-            httpport                = httpport,
-            listen_on               = "127.0.0.1" if private==1 else "0.0.0.0",
-            odoo_rel                = self.release_num,
-            wkhtmltopdf_version     = "0.12.6-1",
-            debian_codename         = "buster",
-            python_major_version    = python_major_version,
-            python_minor_version    = python_minor_version,
-            instance_modfolders     = ",".join(instance_modfolders),
-            pythonlibs_dir          = "/odoo/PythonLibs",
-            )
-        for onetarget in TARGETS_TO_RUN:
-            # Run all the needed targets:
-            self._call_makefile(**{
-                **makefile_params,
-                },
-                targetnames = onetarget,
+            print("========================================")
+            print("=== Installing WkHtmlToX:         ======")
+            print("========================================")
+            #self._lowlevel_install_wkhtmltopdf("0.12.6-1", "buster")
+            self._lowlevel_install_wkhtmltopdf("0.12.6-1", "focal")
+        if skip_venv_creation:
+            print("(virtual environment creation skipped)")
+        else:
+            print("========================================")
+            print("=== Creating virtual environment: ======")
+            print("========================================")
+            self._lowlevel_create_virtual_env(python_major_version, python_minor_version, self.release_num)
+        if skip_external_deps:
+            print("(external deps skipped)")
+        else:
+            print("==================================================")
+            print("=== Installing Python dependencies via pip: ======")
+            print("==================================================")
+            self._lowlevel_install_python_deps(python_major_version, python_minor_version)
+        if skip_config_files:
+            print("(instance (re)creation skipped)")
+        else:
+            print("=========================================")
+            print("=== Odoo instance creation proper: ======")
+            print("=========================================")
+            # A list of targets to run:
+            TARGETS_TO_RUN = [
+                "prepare_all",
+                ]
+            # Prepare parameters:
+            makefile_params = dict(
+                instancenm              = self.instancename,
+                httpport                = httpport,
+                listen_on               = "127.0.0.1" if private==1 else "0.0.0.0",
+                odoo_rel                = self.release_num,
+                wkhtmltopdf_version     = "0.12.6-1",
+                debian_codename         = "buster",
+                python_major_version    = python_major_version,
+                python_minor_version    = python_minor_version,
+                instance_modfolders     = ",".join(instance_modfolders),
+                pythonlibs_dir          = "/odoo/PythonLibs",
                 )
+            for onetarget in TARGETS_TO_RUN:
+                # Run all the needed targets:
+                self._call_makefile(**{
+                    **makefile_params,
+                    },
+                    targetnames = onetarget,
+                    )
     
     def purge_instance(self, keep_code=False):
         self.stop_instance()

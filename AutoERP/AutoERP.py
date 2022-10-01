@@ -36,6 +36,28 @@ def full_refresh_instance(instancenm, release_num, httpport, suitename, private)
     inst.install_all_apps(always_update=True)
 
 @cmdline.opermode
+def instance_refresh_hooks(instancenm, release_num, httpport, suitename, private):
+    installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
+    inst = installer.get_installed_instance(
+        skip_os_preparation     = True,
+        skip_venv_creation      = True,
+        skip_external_deps      = True,
+        skip_config_files       = True,
+        )
+
+@cmdline.opermode
+def instance_refresh_py(instancenm, release_num, httpport, suitename, private):
+    installer = autoerp_lib.InstanceInstaller(instancenm, release_num, suitename, httpport, private)
+    inst = installer.get_installed_instance(
+        skip_os_preparation     = True,
+        skip_venv_creation      = True,
+        skip_external_deps      = True,
+        skip_config_files       = True,
+        )
+    inst.restart_instance()
+    inst.install_all_apps(always_update=True)
+
+@cmdline.opermode
 def purge_instance(instancenm):
     inst = autoerp_lib.OdooInstance(instancenm)
     inst.purge_instance()
