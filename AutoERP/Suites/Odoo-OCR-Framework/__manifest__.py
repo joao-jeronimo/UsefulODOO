@@ -14,7 +14,7 @@
             'type':             "git",
             'url':              "ggit@github.com:joao-jeronimo/Odoo-OCR.git",
             'localname':        "Odoo-OCR",
-            'branch':           "apps-dev",
+            'branch':           "main",
             'odoo_releases':    [
                 #"11.0",
                 #"12.0",
