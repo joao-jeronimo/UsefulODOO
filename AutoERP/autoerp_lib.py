@@ -173,8 +173,10 @@ class AbstractCommandRunner:
     def install_or_upgrade_venv_pip_package(self, packagelist):
         self.runCommand([ self.venvPythonPath, "-m", "pip", "install", "--upgrade", *packagelist, ])
 class LocalCommandRunner(AbstractCommandRunner):
+    def runCommandPassthrough(self, args, **kwargs):
+        return subprocess.run(args, **kwargs)
     def runCommand(self, args, **kwargs):
-        return subprocess.run(args, check=True, **kwargs)
+        return self.runCommandPassthrough(args, check=True, **kwargs)
 
 ####################################################################################
 ##### Modeling Odoo Intances:     ##################################################
@@ -193,6 +195,8 @@ class InstanceSpec:
         return os.path.join(self.get_instance_folder_path(), "instance.conf")
     def config_file_path(self):
         return os.path.join(os.path.sep, 'odoo', 'configs', 'odoo-%s.conf' % (self.instancename,), )
+    def log_file_path(self):
+        return os.path.join(os.path.sep, 'odoo', 'logs', 'odoo-%s.log' % (self.instancename,), )
     def get_instance_repos_path(self):
         return os.path.join(self.get_instance_folder_path(), REPOS_SUBFOLDER_NAME)
     def get_instance_systemd_file_path(self):
@@ -458,6 +462,10 @@ class OdooInstance(InstanceSpec):
         self.cfgman = odoo_config_parser.configmanager(file_path)
         return self.cfgman
     def parse_instance_conf_file(self):
+        """
+        Parses the instance config file, normally found at:
+        /odoo/Instances/<instance name>/instance.conf
+        """
         instanceconf_filepath = self.instance_conf_file_path()
         self.instance_confs = {}
         with open(instanceconf_filepath, "r") as inst_config_file:
@@ -502,6 +510,34 @@ class OdooInstance(InstanceSpec):
         subprocess.run(['sudo', 'systemctl', 'stop', 'odoo-%s'%self.instancename])
     def restart_instance(self):
         subprocess.run(['sudo', 'systemctl', 'restart', 'odoo-%s'%self.instancename])
+    
+    def run_interactive(self, to_stdout=False):
+        """
+        sudo systemctl stop odoo-ocrframework-odoo15-demodevel
+        export PYTHONPATH=/odoo/PythonLibs
+        sudo -u odoo /odoo/VirtualEnvs/Env_Python3.7_Odoo15.0/bin/python /odoo/releases/15.0/odoo-bin		\
+            --database="ocrframework-odoo15-demodevel" --db-filter="ocrframework-odoo15-demodevel.*"			\
+            --config /odoo/configs/odoo-ocrframework-odoo15-demodevel.conf					\
+            --logfile /odoo/logs/odoo-ocrframework-odoo15-demodevel.log
+        """
+        self.stop_instance()
+        self.executor.runCommandPassthrough(args=[
+            'sudo', '-u', 'odoo',
+            self.get_venv_python(),     # This resolves to something like: '/odoo/VirtualEnvs/Env_PythonM.m_OdooNN.0/bin/python'
+            '/odoo/releases/%(odoo_release_num)s/odoo-bin' % {
+                'odoo_release_num' : self.release_num,
+                },
+            '--database=%(instancename)s' % {
+                'instancename' : self.instancename,
+                },
+            '--db-filter=%(instancename)s.*' % {
+                'instancename' : self.instancename,
+                },
+            '--config='+self.config_file_path(),
+            '--logfile='+ ( '/dev/stdout' if to_stdout else self.log_file_path() ),
+            ], env= {
+                'PYTHONPATH'    : '/odoo/PythonLibs',
+                })
     
     def install_all_apps(self, always_update=False):
         thecomm = self.get_communicator()

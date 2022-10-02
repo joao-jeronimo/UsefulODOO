@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sys, argparse, subprocess, autoerp_lib
+
+# Syntax: ./AutoERP-create <instance name> <suite name> <odoo version> <http port>
+
+def Main():
+    # See: https://docs.python.org/3/library/argparse.html
+    parser = argparse.ArgumentParser(description='Creates AutoERP instances and installs suites on them.')
+    
+    #######################################################
+    ##### Configuring the syntax of the cmdline:    #######
+    #######################################################
+    # Positionl arguments are defined this way:
+    parser.add_argument('instance_name',    help='The instance name to create',
+        type=str)
+    # And flag arguments this way:
+    parser.add_argument('--hooks',          help='Runs suite hooks before (re)running Odoo',
+        action='store_const', const=True, default=False)
+    parser.add_argument('--interactive',    help='Run Odoo interactively',
+        action='store_const', const=True, default=False)
+    parser.add_argument('--stdout',         help='Direct the log to stdout instead of to the log file (unfit for calling the debugger)',
+        action='store_const', const=True, default=False)
+    args = parser.parse_args()
+    
+    #######################################################
+    ##### Do the install itself:        ###################
+    #######################################################
+    #print(args) ; return
+    # Create the installer:
+    installed_instance = autoerp_lib.OdooInstance(
+        instancename    = args.instance_name,
+        admin_password="admin"
+        )
+    # (Re)run the hooks if we were asked to:
+    if args.hooks:
+        installed_instance.suite.do_prepare_suite_repos(installed_instance)
+    # Restart the instance via Systemctl:
+    print("Running Odoo . . .")
+    if args.interactive:
+        installed_instance.run_interactive(
+            to_stdout = args.stdout,)
+    else:
+        if args.stdout:
+            print("Option '--stdout' only make sense togther with .--interactve'.")
+            return
+        installed_instance.restart_instance()
+    
+Main()
