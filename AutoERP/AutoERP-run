@@ -27,7 +27,7 @@ def Main():
     ##### Do the install itself:        ###################
     #######################################################
     #print(args) ; return
-    # Create the installer:
+    # Create the runner:
     installed_instance = autoerp_lib.OdooInstance(
         instancename    = args.instance_name,
         admin_password="admin"

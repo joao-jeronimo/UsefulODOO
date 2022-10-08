@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sys, argparse, subprocess, autoerp_lib
+
+# Syntax: ./AutoERP-create <instance name> <suite name> <odoo version> <http port>
+
+def Main():
+    # See: https://docs.python.org/3/library/argparse.html
+    parser = argparse.ArgumentParser(description='Creates AutoERP instances and installs suites on them.')
+    
+    parser.add_argument('instance_name',    type=str,   help='The instance name to create')
+    parser.add_argument('--upgrade-apps',       help='Upgrade suite apps',
+        action='store_const', const=True, default=False)
+    args = parser.parse_args()
+    
+    #######################################################
+    ##### Do the install itself:        ###################
+    #######################################################
+    # Create the runner:
+    installed_instance = autoerp_lib.OdooInstance(
+        instancename    = args.instance_name,
+        admin_password  ="admin"
+        )
+    # Upgrade instance apps:
+    installed_instance.install_all_apps(always_update=True)
+    
+Main()

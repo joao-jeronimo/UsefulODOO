@@ -32,6 +32,7 @@
     'modules':  [
         # Base apps:
         { 'name': 'dynamic_attachments',                  'active': ["15.0", ], },
-        { 'name': 'tesseract_ocr_wrapper',                  'active': ["15.0", ], },
+        { 'name': 'dynamic_attachments_pdf',              'active': ["15.0", ], },
+        { 'name': 'tesseract_ocr_wrapper',                'active': ["15.0", ], },
         ],
 }
