@@ -1,16 +1,11 @@
 import os
 from PythonPorter import PythonPorter
 
-def snakecase2cammelcase(str_in_snake):
-    splitted = str_in_snake.split("_")
-    return "".join([ word.capitalize() for word in splitted ])
-
-def port_app(basedir, app_name_snakecase, target_name):
-    print("Porting app %s to Odoo %s" % (app_name_snakecase, target_name,))
+def port_app(basedir, app_name_camelcase, target_name):
+    print("Porting app %s to Odoo %s" % (app_name_camelcase, target_name,))
     format_names = {
         'basedir'               : basedir,
-        'app_name_snakecase'    : app_name_snakecase,
-        'app_name_camelcase'    : snakecase2cammelcase(app_name_snakecase),
+        'app_name_camelcase'    : app_name_camelcase,
         'target_name'           : target_name,
         }
     # Params:
@@ -23,19 +18,19 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
-    { 'name': "payslip_advanced_info_tab",          'exclude_rels': [] },
+    { 'name': "PayslipAdvancedInfoTab",          'exclude_rels': [] },
     
-    { 'name': "payslip_aggregate_rule",             'exclude_rels': [] },
-    { 'name': "payroll_typesafe_formulas",          'exclude_rels': [] },
+    { 'name': "PayslipAggregateRule",             'exclude_rels': [] },
+    { 'name': "PayrollTypesafeFormulas",          'exclude_rels': [] },
     
-    { 'name': "payslip_effective_dates",            'exclude_rels': [] },
-    { 'name': "payslip_proportional_bases",         'exclude_rels': [] },
+    { 'name': "PayslipEffectiveDates",            'exclude_rels': [] },
+    { 'name': "PayslipProportionalBases",         'exclude_rels': [] },
     
-    { 'name': "alternative_detailed_payslip",       'exclude_rels': [] },
-    { 'name': "alternative_french_payslip",         'exclude_rels': [] },
-    { 'name': "simple_payslip_template",            'exclude_rels': [] },
+    { 'name': "AlternativeDetailedPayslip",       'exclude_rels': [] },
+    { 'name': "AlternativeFrenchPayslip",         'exclude_rels': [] },
+    { 'name': "SimplePayslipTemplate",            'exclude_rels': [] },
     
-    { 'name': "hr_payroll_community_demo_data",     'exclude_rels': [] },
+    { 'name': "HrPayrollCommunityDemoData",     'exclude_rels': [] },
     ]
 
 def port_modules_odoo(instance, repo_localname, basedir):
