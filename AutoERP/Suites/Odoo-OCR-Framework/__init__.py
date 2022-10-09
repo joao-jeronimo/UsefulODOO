@@ -1,16 +1,11 @@
 import os
 from PythonPorter import PythonPorter
 
-def snakecase2cammelcase(str_in_snake):
-    splitted = str_in_snake.split("_")
-    return "".join([ word.capitalize() for word in splitted ])
-
-def port_app(basedir, app_name_snakecase, target_name):
-    print("Porting app %s to Odoo %s" % (app_name_snakecase, target_name,))
+def port_app(basedir, app_name_camelcase, target_name):
+    print("Porting app %s to Odoo %s" % (app_name_camelcase, target_name,))
     format_names = {
         'basedir'               : basedir,
-        'app_name_snakecase'    : app_name_snakecase,
-        'app_name_camelcase'    : snakecase2cammelcase(app_name_snakecase),
+        'app_name_camelcase'    : app_name_camelcase,
         'target_name'           : target_name,
         }
     # Params:
@@ -23,9 +18,8 @@ def port_app(basedir, app_name_snakecase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
-    { 'name': "dynamic_attachments",                        'exclude_rels': [] },
-    { 'name': "dynamic_attachments_pdf",                    'exclude_rels': [] },
-    { 'name': "tesseract_ocr_wrapper",                      'exclude_rels': [] },
+    { 'name': "DynamicAttachments",                         'exclude_rels': [] },
+    { 'name': "TesseractOcrWrapper",                        'exclude_rels': [] },
     ]
 
 def port_modules_odoo(instance, repo_localname, basedir):
