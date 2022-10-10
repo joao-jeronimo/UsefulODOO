@@ -116,7 +116,11 @@ class PythonPorter:
         Compute source and destination absolute paths for filename.
         """
         real_src_path = os.path.join(self.sourcedir, filename)
-        real_dst_path = os.path.join(self.destdir, filename)
+        real_dst_path = os.path.join(
+            self.destdir,
+            # Apply macroes to the destination relative file path:
+            self.apply_macroes_to_string(filename),
+            )
         return (real_src_path, real_dst_path)
     
     ################################################
@@ -127,8 +131,11 @@ class PythonPorter:
         alldirs_relative = self.find_dirs()
         # Make the root dir of the final destination, if it does not already exist:
         subprocess.check_output(["mkdir", "-p", self.destdir])
-        # TODO: macro-substitute every directory to create:
-        destination_dirs_relative = alldirs_relative
+        # Macro-substitute every directory path to create:
+        destination_dirs_relative = [
+            self.apply_macroes_to_string(onedir_relative)
+            for onedir_relative in alldirs_relative
+            ]
         # Build full destination paths:
         destination_dirs_absolute = [
             os.path.join(self.destdir, thisdir_relative)
