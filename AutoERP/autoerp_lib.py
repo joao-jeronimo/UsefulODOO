@@ -511,6 +511,17 @@ class OdooInstance(InstanceSpec):
     def restart_instance(self):
         subprocess.run(['sudo', 'systemctl', 'restart', 'odoo-%s'%self.instancename])
     
+    def show_odoo_help(self):
+        self.executor.runCommandPassthrough(args=[
+            self.get_venv_python(),
+            '/odoo/releases/%(odoo_release_num)s/odoo-bin' % {
+                'odoo_release_num' : self.release_num,
+                },
+            '--help',
+            ], env= {
+                'PYTHONPATH'    : '/odoo/PythonLibs',
+                })
+    
     def run_interactive(self, to_stdout=False):
         """
         sudo systemctl stop odoo-ocrframework-odoo15-demodevel
