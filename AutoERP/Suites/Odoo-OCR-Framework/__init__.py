@@ -18,6 +18,7 @@ def port_app(basedir, app_name_camelcase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
+    { 'name': "FollowMouse",                                'exclude_rels': [] },
     { 'name': "DynamicAttachments",                         'exclude_rels': [] },
     { 'name': "TesseractOcrWrapper",                        'exclude_rels': [] },
     ]
