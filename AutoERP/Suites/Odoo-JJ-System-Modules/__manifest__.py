@@ -14,7 +14,7 @@
             'type':             "git",
             'url':              "git@github.com:joao-jeronimo/Odoo-System-mods.git",
             'localname':        "Odoo-System-mods",
-            'branch':           "main",
+            'branch':           "master",
             'odoo_releases':    [
                 #"11.0",
                 #"12.0",
@@ -31,8 +31,8 @@
         ],
     'modules':  [
         # Base apps:
-        { 'name': 'extensible_auto_backup',                 'active': ["15.0", ], },
-        { 'name': 'extensible_auto_backup_googledrive',     'active': ["15.0", ], },
-        #{ 'name': 'extensible_auto_backup_sftp',            'active': ["15.0", ], },
+        { 'name': 'extensible_auto_backup',                 'active': ["14.0", ], },
+        { 'name': 'extensible_auto_backup_googledrive',     'active': ["14.0", ], },
+        #{ 'name': 'extensible_auto_backup_sftp',            'active': ["14.0", ], },
         ],
 }
