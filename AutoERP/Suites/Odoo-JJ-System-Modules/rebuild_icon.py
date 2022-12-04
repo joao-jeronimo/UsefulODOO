@@ -2,54 +2,35 @@
 # -*- coding: utf-8 -*-
 import sys, argparse, subprocess, wrlgen
 
+the_cylinder = wrlgen.Concretize(
+    color=[0.5, 0.5, 0.5],
+    shape=wrlgen.RawCylinder(10, 5),
+    )
+
 resulting_file = wrlgen.VmrlModel([
     wrlgen.Transform(
         translate = (0, 21, 0),
-        objects=["""
-        Shape {
-            appearance Appearance { material Material {diffuseColor 0.5 0.5 0.5} }
-            geometry Cylinder {
-                radius 10
-                height 5
-                }
-        }
-        """]
+        objects=[
+            the_cylinder,
+            ]
         ),
     wrlgen.Transform(
         translate = (0, 14, 0),
-        objects=["""
-        Shape {
-            appearance Appearance { material Material {diffuseColor 0.5 0.5 0.5} }
-            geometry Cylinder {
-                radius 10
-                height 5
-                }
-        }
-        """]
+        objects=[
+            the_cylinder,
+            ]
         ),
     wrlgen.Transform(
         translate = (0, 7, 0),
-        objects=["""
-        Shape {
-            appearance Appearance { material Material {diffuseColor 0.5 0.5 0.5} }
-            geometry Cylinder {
-                radius 10
-                height 5
-                }
-        }
-        """]
+        objects=[
+            the_cylinder,
+            ]
         ),
     wrlgen.Transform(
         translate = (0, 0, 0),
-        objects=["""
-        Shape {
-            appearance Appearance { material Material {diffuseColor 0.5 0.5 0.5} }
-            geometry Cylinder {
-                radius 10
-                height 5
-                }
-        }
-        """]
+        objects=[
+            the_cylinder,
+            ]
         ),
     ])
 

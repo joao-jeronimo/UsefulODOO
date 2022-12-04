@@ -23,3 +23,20 @@ def Transform(translate=False, objects=[]):
         'objects'           : "\n".join(objects),
         }
 
+def RawCylinder(radius, height):
+    return """
+geometry Cylinder {
+    radius %d
+    height %d
+    }
+""" % ( radius, height, )
+
+def Concretize(shape, color):
+    fmtargs = ( *color, shape, )
+    #breakpoint()
+    return """
+Shape {
+    appearance Appearance { material Material { diffuseColor %f %f %f } }
+    %s
+}
+""" % fmtargs
