@@ -1,0 +1,6 @@
+wheel
+odoo-client-lib
+ezodf
+lxml
+odoo-import-export-client
+unidecode

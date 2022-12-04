@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Version 1 - Start phasing-out util_odoo.py
-
-import sys, os, io, time, datetime, odoolib, tempfile, re, base64, ezodf, random, string
+import sys, os, io, time, datetime, odoolib, tempfile, re, base64, ezodf, random, string, requests, itertools
 from odoo_csv_tools import import_threaded
 from odoo_csv_tools.lib.internal.csv_reader import UnicodeReader, UnicodeWriter
 from getpass import getpass
@@ -13,7 +11,6 @@ if sys.version_info >= (3, 0, 0):
     import configparser as ConfigParser
 else:
     import ConfigParser
-import pdb
 
 ##########################################################
 #### Useful constants: ###################################
@@ -273,19 +270,32 @@ class OdooCommunicator:
         #pdb.set_trace()
         wizard_instance = modules_model.create({})
         modules_model.update_module(wizard_instance)
-
-    def give_module_op_errors_and_die(self, e):
+    
+    def analyse_odoo_op_errors_and_die(self, e):
+        # Get the full error message that is inside the exception:
         exc_string = str(e).replace("\\n", "\n")
-        if (    exc_string.find('The server is busy right now, module operations are not possible')!=-1
-                or exc_string.find('Remote end closed connection without')!=-1 ):
-            print("Servidor ocupado... a tentar novamente em %d segundos." % (WAIT_SECS,))
+        # Descover if it's wroth retrying the operation:
+        retry_detection_functions = [
+            ( lambda estring: estring.find('busy') != -1 ),
+            # The following test is a no-op, but I'm not sure if the previous one works, so I keep this one here!:
+            ( lambda estring: estring.find('The server is busy right now, module operations are not possible')!=-1 ),
+            ( lambda estring: estring.find('Remote end closed connection without')!=-1 ),
+            ( lambda estring: estring.find('could not serialize access due to concurrent update')!=-1 ),
+            ]
+        worth_retrying = any([
+            this_testfunc(exc_string)
+            for this_testfunc in retry_detection_functions
+            ])
+        # Signal a needed retrial if any of the tests returned True:
+        if worth_retrying:
+            print("Odoo deamon is busy. trying agin in %d seconds . . ." % (WAIT_SECS,))
             time.sleep(WAIT_SECS)
             return True
         else:
-            print("Falhou! Traceback interno do erro:")
+            print("Operation failed! Odoo backtrace follows:")
             print( exc_string.replace("\\n", "\n") )
-            exit(-1)
-
+            raise Exception("Odoo RPC remote call failed. Exception returned from Odoo pretty printed ^^^above^^^. ")
+    
     def module_state(self, techname, verbose=True):
         n_tries = 0
         retry = True
@@ -295,16 +305,16 @@ class OdooCommunicator:
                 modules_model = self.odoo_connection.get_model("ir.module.module")
                 themodule = modules_model.search([('name', '=', techname)])
                 if not(any(themodule)):
-                    print("Módulo %s não encontrado..."%techname)
+                    print("Módulo %s não encontrado..." % techname)
                     exit(-1)
                 # Fast skip if already installed:
                 mod_state_before = modules_model.read(themodule, fields=['state'])
                 return mod_state_before[0]['state']
             except odoolib.main.JsonRPCException as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
             except http.client.RemoteDisconnected as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
 
     def install_module(self, techname, verbose=True):
@@ -318,11 +328,14 @@ class OdooCommunicator:
                 modules_model = self.odoo_connection.get_model("ir.module.module")
                 themodule = modules_model.search([('name', '=', techname)])
                 if not(any(themodule)):
-                    print("Módulo não encontrado...")
+                    print("Módulo %s não encontrado..." % techname)
                     exit(-1)
                 # Fast skip if already installed:
                 mod_state_before = modules_model.read(themodule, fields=['state'])
-                if mod_state_before[0]['state'] == 'installed': return True
+                if mod_state_before[0]['state'] == 'installed':
+                    if verbose:
+                        print("(Já instalado)")
+                    return True
                 modules_model.button_immediate_install(themodule)
                 # See if was installed:
                 mod_state_after = modules_model.read(themodule, fields=['state'])
@@ -331,10 +344,13 @@ class OdooCommunicator:
                     exit(-1)
                 return
             except odoolib.main.JsonRPCException as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
             except http.client.RemoteDisconnected as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
+                if retry and n_tries>=N_TRIALS: raise e
+            except requests.exceptions.ConnectionError as e:
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
 
     def upgrade_module(self, techname):
@@ -346,7 +362,7 @@ class OdooCommunicator:
                 modules_model = self.odoo_connection.get_model("ir.module.module")
                 themodule = modules_model.search([('name', '=', techname)])
                 if not(any(themodule)):
-                    print("Módulo não encontrado...")
+                    print("Módulo %s não encontrado..." % techname)
                     exit(-1)
                 mod_state_before = modules_model.read(themodule, fields=['state'])
                 if mod_state_before[0]['state'] != 'installed':
@@ -360,14 +376,14 @@ class OdooCommunicator:
                     exit(-1)
                 return
             except odoolib.main.JsonRPCException as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
 
     def install_or_upgrade_module(self, techname):
         modules_model = self.odoo_connection.get_model("ir.module.module")
         themodule = modules_model.search([('name', '=', techname)])
         if not(any(themodule)):
-            print("Módulo não encontrado...")
+            print("Módulo %s não encontrado..." % techname)
             exit(-1)
         mod_state_before = modules_model.read(themodule, fields=['state'])
         if mod_state_before[0]['state'] == 'installed':
@@ -379,7 +395,7 @@ class OdooCommunicator:
         modules_model = self.odoo_connection.get_model("ir.module.module")
         themodule = modules_model.search([('name', '=', techname)])
         if not(any(themodule)):
-            print("Módulo não encontrado...")
+            print("Módulo %s não encontrado..." % techname)
             exit(-1)
         return themodule
     
@@ -388,10 +404,48 @@ class OdooCommunicator:
         mod_state = modules_model.read(mod_id, fields=['state'])
         return mod_state[0]['state']
     
+    def version_greater_than(self, vers1, vers2):
+        # Split version strings:
+        sp_vers1 = [ int(el) for el in vers1.split('.') ]
+        sp_vers2 = [ int(el) for el in vers2.split('.') ]
+        # Compare version elements that exist on both sides:
+        for i in range( min( len(sp_vers1), len(sp_vers2) ) ):
+            if sp_vers1[i] > sp_vers2[i]:
+                return True
+            elif sp_vers1[i] < sp_vers2[i]:
+                return False
+            else:
+                # sp_vers1[i] == sp_vers2[i]:
+                # In this case, inspect the next number.
+                pass
+        # If we reached this, it means that every component is equal up to the common
+        # part. And in that case, the most recent version is the one that has the most
+        # components (i.e. 10.0.0.3 is earlier than 10.0.0.3.1).
+        return len(sp_vers1) > len(sp_vers2)
+    
+    def get_module_versions(self, mod_id, rescan_mods=True):
+        if rescan_mods:
+            self.update_modules_list()
+        modules_model = self.odoo_connection.get_model("ir.module.module")
+        mod_verses = modules_model.read(mod_id, fields=['name', 'installed_version', 'latest_version', 'published_version'])
+        ret = {
+            'version_on_disk'   : mod_verses[0]['installed_version'],
+            'version_installed' : mod_verses[0]['latest_version'],
+            'version_in_repo'   : mod_verses[0]['published_version'],
+            }
+        # Determine if module needs an update/install:
+        if not ret['version_installed']:
+            ret['needs_update'] = True
+        else:
+            ret['needs_update'] = (
+                self.version_greater_than(ret['version_on_disk'], ret['version_installed'])   )
+        # Return module version info:
+        return ret
+    
     def get_module_dependencies(self, mod_id):
         """
-        Module dependencies as other modules that this moduel depends on.
-        Returns a lista of [id, name] pairsof dependencies.
+        Module dependencies are other modules that this module depends on.
+        Returns a list of [id, name] pairs of dependencies.
         """
         module_model = self.odoo_connection.get_model("ir.module.module")
         module_dependency_model = self.odoo_connection.get_model("ir.module.module.dependency")
@@ -406,7 +460,7 @@ class OdooCommunicator:
     
     def get_module_dependants(self, mod_id):
         """
-        Module dependencies as other modules that this moduel depends on.
+        Module dependants are other modules that depend on this module.
         """
         modules_model = self.odoo_connection.get_model("ir.module.module")
         module_dependency_model = self.odoo_connection.get_model("ir.module.module.dependency")
@@ -463,7 +517,7 @@ class OdooCommunicator:
                     exit(-1)
                 return
             except odoolib.main.JsonRPCException as e:
-                retry = self.give_module_op_errors_and_die(e)
+                retry = self.analyse_odoo_op_errors_and_die(e)
                 if retry and n_tries>=N_TRIALS: raise e
     
     def activate_chart_of_accounts_by_dxid(self, the_coa_dxid, company_id=False):
@@ -498,6 +552,9 @@ class OdooCommunicator:
         sysparms_model.write(theobj, { 'value': parmvalue })
 
     def set_field_defaults(self, field_dxid, json_default_value, user_login=False):
+        """
+        Sets default for fields by means of ir.model.fields mechanism.
+        """
         # Get model proxies:
         ModelIrDefault = self.odoo_connection.get_model("ir.default")
         ModelModelFields = self.odoo_connection.get_model("ir.model.fields")
@@ -519,6 +576,7 @@ class OdooCommunicator:
         else:
             existing_defaults = ModelIrDefault.create({
                 'field_id': field_id,
+                'json_value': "False",
                 })
         # Set default value for field:
         ModelIrDefault.write(existing_defaults, {
@@ -527,27 +585,59 @@ class OdooCommunicator:
             })
     
     ################################################################
-    ### General Data Loads: ########################################
+    ### Logic for loading data into Odoo models:      ##############
     ################################################################
-    def gen_dict(self, model, src=[], dst='id', srcfield=False):
-        #pdb.set_trace()
+    def generate_injective_dictionary_for_model(self, model, domain=[], dst='id', srcfield=False):
+        """
+        Queries Odoo for pairs of fields, given a model and a
+        domain. Then builds a dictionary expressing an injective
+        relation between the two fields.
+        This is useful to know the ids of every record given some
+        other (unique) field, e.g. get to know the id of each
+        account given it's code.
+            model       The Odoo model to query.
+            domain      Odoo domain for the record to get pairs.
+            srcfield    The field whose values will be used as dictionary
+                        keys. If not provided, then the field refered to
+                        by the first domain leaf is used.
+            dst         The field from which the values of the returned
+                        dictionary will be taken. If not provided, then the
+                        (integer) id will be used.
+        """
+        # If the srcfield is not specified, go the the first clause of the
+        # domain and get it's first leaf (which will most likely be a field name):
         if not srcfield:
-            srcfield = src[0][0]
+            srcfield = domain[0][0]
+        # Prepare for talking with Odoo:
         Model = self.odoo_connection.get_model(model)
-        associateable = Model.search_read(src, fields=[srcfield, dst])
+        # Read both fields from record that fit in the domain:
+        associateable = Model.search_read(
+            domain,
+            fields=[srcfield, dst],
+            )
+        # Build the final dictionary:
         ret = {}
-        for item in associateable:
-            s = item[srcfield]
-            d = item[dst]
-            ret[s] = d
+        for record_field_pair in associateable:
+            # The srcfield field present in the pair is used as the key:
+            thekey = record_field_pair[srcfield]
+            # The srcfield field present in the pair is used as the value:
+            thevalue = record_field_pair[dst]
+            # Add this record to the dictionary:
+            ret[thekey] = thevalue
         return ret
     
-    def doload(self, themodel, thefields, thedatas, context={}):
-        n_trials = 0
+    def _lowlevel_odoorpc_model_load(self, themodel, thefields, thedatas, context={}):
+        """
+        Commnicate with Odoo to load data into a model via model method load().
+        Avoid calling this directly, because this does not handle "rich" column
+        specs like askey:, byfield and comments:'s. Call cook_and_load_tabular_data()
+        instead.
+        """
+        n_tries = 0
         while True:
             try:
-                n_trials += 1
-                print("A carregar dados...")
+                n_tries += 1
+                print("Calling Odoo to load data via RPC . . .")
                 loadret = self.odoo_connection.get_model(themodel).load(thefields, thedatas, context=context)
                 #print("Return da função de load: "+str(loadret))
                 if loadret['ids'] == False:
@@ -555,19 +645,18 @@ class OdooCommunicator:
                     print("loadret = "+str(loadret) )
                     raise odoolib.main.JsonRPCException(loadret)
             except odoolib.main.JsonRPCException as e:
-                if 'messages' in e.args[0] and e.args[0]['messages'][0]['message'].find("busy") != -1:
-                    print("Servidor ocupado... a tentar novamente em %d segundos." % (WAIT_SECS,))
-                    if n_trials >= N_TRIALS: raise e
-                    time.sleep(WAIT_SECS)
-                else:
-                    print("Falhou! Traceback interno do erro:")
-                    print("thefields = "+str(thefields))
-                    print("thedatas = "+str(thedatas).replace("[[", "[\n  [").replace("], [", "],\n  [").replace("]]", "]\n]") )
-                    print("First error: " + str(e.args[0]).replace("\\n", "\n"))
-                    exit(-1)
+                retry = self.analyse_odoo_op_errors_and_die(e)
+                if retry and n_tries>=N_TRIALS: raise e
+                # JJ 2022-11-29: The exception was handled here inline. ON that date the handling
+                #    was offloaded to analyse_odoo_op_errors_and_die() method.
             return loadret
-
+    
+    # Methods for preprocessing askey:, byfield and comment: columns, and auxiliaries thereof:
     def find_relation_model(self, modelname, fieldname):
+        """
+        Given a model name and a relation field name, return the name of the
+        model that is linked on the other side of the relation.
+        """
         models_model = self.odoo_connection.get_model("ir.model")
         fields_model = self.odoo_connection.get_model("ir.model.fields")
         # Find model's id:
@@ -580,8 +669,8 @@ class OdooCommunicator:
             print("!!!!! ERRO: O modelo %s não tem nenhum campo chamado %s." % (modelname, fieldname,))
             exit(-1)
         return relat_data[0]['relation']
-
-    def cook_csv_askey(self, themodel, header, data, coli, context={}):
+    
+    def _cook_loadable_table_askey(self, themodel, header, data, coli, context={}):
         # Get the field to use as key:
         key_field = re.sub("^askey:", "", header[coli], flags=0)
         all_field_values = list(set([ lin[coli] for lin in data ]))
@@ -615,9 +704,8 @@ class OdooCommunicator:
             else:
                 data[lini][coli] = this_record_xid[0]
         header[coli] = "id"
-        
-
-    def cook_csv_byfield(self, themodel, header, data, coli, context={}):
+    
+    def _cook_loadable_table_byfield(self, themodel, header, data, coli, context={}):
         # Proccess byfield headers:
         header_splited = header[coli].split(' byfield ')
         # Replace byfield headers by db id calls:
@@ -625,7 +713,10 @@ class OdooCommunicator:
         # Find out what model that column points to:
         relat_column_model = self.find_relation_model(themodel, header_splited[0])
         # Get all values present in that column:
-        all_field_values = list(set([ lin[coli] for lin in data ]))
+        all_field_values = list(set(itertools.chain(*[
+            lin[coli].split(',')
+            for lin in data
+            ])))
         # Get External IDs of all records corresponding to that entries:
         col_model_proxy = self.odoo_connection.get_model(relat_column_model)
         field_correspondence_context = {**context, **self.connection_context, **{'active_test': False}, }
@@ -642,29 +733,123 @@ class OdooCommunicator:
             if raw_data.strip()=='':
                 data[lini][coli] = False
             else:
-                this_record_db_id = [ fp[0]
-                    for fp in all_field_pairs
-                    if fp[1]==raw_data ]
-                if len(this_record_db_id) == 0:
-                    print("Não foi encontrado nenhum registo com a %s='%s' no modelo %s . . ." %
-                            (header_splited[1], raw_data, relat_column_model))
-                    exit(-1)
-                elif len(this_record_db_id) > 1:
-                    print("Foi encontrado mais de um registo com a coluna %s='%s' no modelo %s . . ." %
-                            (header_splited[1], raw_data, relat_column_model))
-                    exit(-1)
-                data[lini][coli] = this_record_db_id[0]
-
-    def cook_csv(self, themodel, header, data, context={}):
-        for coli in range(len(header)):
+                res_xids = []
+                for onexid in raw_data.split(','):
+                    this_record_db_id = [
+                        fp[0]
+                        for fp in all_field_pairs
+                        if fp[1]==onexid ]
+                    if len(this_record_db_id) == 0:
+                        print("Não foi encontrado nenhum registo com a %s='%s' no modelo %s . . ." %
+                                (header_splited[1], raw_data, relat_column_model))
+                        exit(-1)
+                    elif len(this_record_db_id) > 1:
+                        print("Foi encontrado mais de um registo com a coluna %s='%s' no modelo %s . . ." %
+                                (header_splited[1], raw_data, relat_column_model))
+                        exit(-1)
+                    res_xids.append(this_record_db_id[0])
+                data[lini][coli] = ','.join(res_xids)
+    
+    def _cook_loadable_table_comment(self, themodel, header, data, coli, context={}):
+        # Truncate loaded data into empty strings:
+        del header[coli]
+        for lini in range(len(data)):
+            del data[lini][coli]
+    
+    def _cook_loadable_table(self, themodel, header, data, context={}):
+        """
+        Processes Odoo model tabular data.
+        Makes tabular data compatible with Odoo model.load() method by reducing the
+        following constructs into a format compatible with that method:
+         * Columns in the form «askey:field_name»;
+         * Columns in the form «relational_field_name byfield subfield_name»;
+         * Columns in the form «comment:Any text».
+        """
+        # For each column, preprocess it if is has certain forms:
+        coli = 0
+        while coli < len(header):
+            # Column names in the form «col_name byfield sub_col_name»:
             if   " byfield " in header[coli]:
-                self.cook_csv_byfield(themodel, header, data, coli, context=context)
+                self._cook_loadable_table_byfield(themodel, header, data, coli, context=context)
+            # Column names in the form «askey:col_name»:
             elif re.search("^askey:.*$", header[coli], flags=0):
-                self.cook_csv_askey(themodel, header, data, coli, context=context)
-        #if themodel=='product.template': pdb.set_trace()
-
-    def load_csv(self, conn_parms, infilenm, modelname, context={}):
-        def load_csv_can_fail(self, conn_parms, infilenm, modelname, context={}):
+                self._cook_loadable_table_askey(themodel, header, data, coli, context=context)
+            # Column names in the form «comment: Some explanation»:
+            elif re.search("^comment:.*$", header[coli], flags=0):
+                self._cook_loadable_table_comment(themodel, header, data, coli, context=context)
+                # Undo the increment, because comments are deleted, and hence
+                # the next column to cook is now at present index:
+                coli -= 1
+            coli += 1
+    
+    # Front-end methods fro mass loading data:
+    def cook_and_load_tabular_data(self, themodel, thefields, thedatas, context={}):
+        """
+        Given tabular data contained in "thefields" and "thedatas" arguments, load
+        that data into a given Odoo model. No files are processed by this method.
+        Obs: This has the same spec as _lowlevel_odoorpc_model_load(), but additionally
+        processes 'rich' comumn names.
+            self        The communicator connected to destinaton instance.
+            thefields   List of header names.
+            thedatas    List of model lines, indexed by column names (or rich
+                        column names) contained in thefields argument.
+            themodel    The model name.
+            context     A context to pass in RPC calls.
+        """
+        # Prune empty lines:
+        thedatas = [ dr for dr in thedatas if any(dr) ]
+        # Cook the CSV as we want it:
+        self._cook_loadable_table(themodel, thefields, thedatas, context=context)
+        check_id_column(thefields)
+        # Call Odoo server:
+        ret = self._lowlevel_odoorpc_model_load(themodel, thefields, thedatas, context)
+        # Call lib function:
+        return ret
+    
+    def import_csv_file(self, infilenm, modelname, context={}):
+        """
+        Reads, cooks and loads a named CSV file into the Odoo instance
+        connected to by this communicator.
+            self        The communicator connected to destinaton instance.
+            infilenm    The CSV filename.
+            modelname   The model name.
+            context     A context to pass in RPC calls.
+        """
+        # Read file in, so that we can cook with it:
+        (encoding, separator, ) = ('utf-8', ';', )
+        header, data = csv_read_file(infilenm, delimiter=separator, encoding=encoding)
+        # After having the file in memory, load it normally:
+        self.cook_and_load_tabular_data(modelname, header, data, context)
+    
+    def import_model_csv(self, modelname, context={}, locdir=".", filename=False):
+        """
+        This method does the same this as (and calls) import_csv_file, but
+        tries to determine the filename of the CSV file automatically.
+            self        The communicator connected to destinaton instance.
+            modelname   The model name.
+            context     A context to pass in RPC calls.
+            locdir      Location where the file is expected to be in.
+            filename    Optional filename, a default one will be invented if not provided.
+        """
+        # Calculate names:
+        if not filename:
+            filename = modelname+".csv"
+        filepath = os.path.join(locdir, filename)
+        # Do the data load:
+        ret = self.import_csv_file(infilenm=filepath, modelname=modelname, context=context)
+        return ret
+    
+    # Deprecated mass loading method:
+    def _deprecated_load_csv_given_conn_parms(self, conn_parms, infilenm, modelname, context={}):
+        """
+        (Deprecated and dengerous! Left here only for reference.)
+        Reads, cooks and loads a CSV file into Odoo, given a dictionary
+        of connection parameters, a filename and a model name.
+        self        This is the communicator used to cook the "rich" columns
+                    like askey:, byfield and comment:, and may differ from the
+                    connection parameters.
+        """
+        def _deprecated_load_csv_given_conn_parms_can_fail(self, conn_parms, infilenm, modelname, context={}):
             # Build config file programmatically:
             config_file = tempfile.TemporaryFile()
             config_file_data = bytes("""
@@ -688,7 +873,7 @@ class OdooCommunicator:
             separator = ';'
             header, data = csv_read_file(infilenm, delimiter=separator, encoding=encoding)
             # Cook the CSV as we want it:
-            self.cook_csv(modelname, header, data, context=context)
+            self._cook_loadable_table(modelname, header, data, context=context)
             check_id_column(header)
             #print(repr([ header, data ]))
             # Call lib function:
@@ -722,11 +907,11 @@ class OdooCommunicator:
                 if allerrors.find("\n") != -1:
                     raise OdooCommException("!!! Data file load error. the following records were not loaded:\n" + allerrors)
             return ret
-        
+        # Call _deprecated_load_csv_given_conn_parms_can_fail several retries until retry limit:
         import_retry = [ True, 0 ]
         while import_retry[0]:
             try:
-                ret = load_csv_can_fail(self, conn_parms, infilenm, modelname, context=context)
+                ret = _deprecated_load_csv_given_conn_parms_can_fail(self, conn_parms, infilenm, modelname, context=context)
                 print("[ OK ] Importação completa.")
                 import_retry[0] = False
             except Exception as ex:
@@ -739,39 +924,6 @@ class OdooCommunicator:
                     print("!!!!!! Importação falhou após 5 tentativas. Excepção:")
                     raise ex
         self.reconnect()
-        return ret
-
-    def direct_load_csv(self, infilenm, modelname, context={}):
-        # Read file in, so that we can cook on it:
-        encoding='utf-8'
-        separator = ';'
-        header, data = csv_read_file(infilenm, delimiter=separator, encoding=encoding)
-        # Prune empty lines:
-        data = [ dr for dr in data if any(dr) ]
-        # Cook the CSV as we want it:
-        self.cook_csv(modelname, header, data, context=context)
-        check_id_column(header)
-        # Call Odoo server:
-        ret = self.doload(modelname, header, data, context)
-        # Call lib function:
-        return ret
-
-    # CSV Load:
-    def import_csv(self, modelname, context={}, locdir=".", filename=False):
-        # Calculate names:
-        if not filename:
-            filename = modelname+".csv"
-        filepath = os.path.join(locdir, filename)
-        # Do the data load:
-        ret = self.direct_load_csv(infilenm=filepath, modelname=modelname, context=context)
-        #ret = self.load_csv(conn_parms=self.connection_params, infilenm=filepath, modelname=modelname, context=context)
-        #print("========================")
-        #print("========================")
-        #print("========================")
-        #print("== O Erro: %s"%str(ret))
-        #print("========================")
-        #print("========================")
-        #print("========================")
         return ret
     
     ############################################################
@@ -795,25 +947,42 @@ class OdooCommunicator:
             dom.append( ('lang', '=', lang) )
         to_del_ids = translations_model.search(dom)
         translations_model.unlink(to_del_ids)
-    def load_translation(self, isocode):
-        add_language_wizard_model = self.odoo_connection.get_model("base.language.install")
-        wizard_instance = add_language_wizard_model.create({
+    def load_translation(self, isocode, always_install=False):
+        """
+        Installs a new language if not already installed.
+        """
+        AddLanguageWizardModel = self.odoo_connection.get_model("base.language.install")
+        LanguageModel = self.odoo_connection.get_model("res.lang")
+        # Is already installed?
+        if 0 != LanguageModel.search_count([('code', '=', isocode), ('active', '=', True)]):
+            already_installed = True
+        else:
+            already_installed = False
+        # Installs language if not installed:
+        if already_installed and not  always_install:
+            print("Language %s is already activated. Skipping install..." % isocode)
+            return
+        wizard_instance = AddLanguageWizardModel.create({
                     'lang'        : isocode,
                     'overwrite'   : True,
                     })
-        add_language_wizard_model.lang_install(wizard_instance)
+        AddLanguageWizardModel.lang_install(wizard_instance)
     
     def import_translation_file(self, isocode, filename):
         print("A carregar ficheiro de traduções %s para %s." % (filename, isocode))
         # Load the CSV translation as binary data:
         with open(filename, "rb") as trans_file:
-            trans_data = base64.encodebytes(trans_file.read())
+            # Read in file data (assumed to be UTF-8):
+            input_po_data = trans_file.read()
+        trans_data = base64.encodebytes(input_po_data)
         # Load it onto the database:
         import_language_wizard_model = self.odoo_connection.get_model("base.language.import")
         wizard_instance = import_language_wizard_model.create({
                     'name'          : isocode,
                     'code'          : isocode,
                     'filename'      : filename,
+                    # Base64 data is encoded according to latin-15 because it uses chars from that
+                    # family, and has nothign to do with the charset user by the PO file itself:
                     'data'          : str(trans_data, "iso-8859-15"),
                     'overwrite'     : True,
                     })
@@ -826,12 +995,21 @@ class OdooCommunicator:
         wizard_instance = export_language_wizard_model.create({
                     'lang'          : isocode,
                     'format'        : 'po',
-                    'modules/name'  : appname,
-                    #'filename'      : filename,
-                    #'data'          : str(trans_data, "iso-8859-15"),
-                    #'overwrite'     : True,
+                    'modules'       : self.get_module_id(appname),
                     })
-        export_language_wizard_model.act_getfile(wizard_instance)
+        resulting_wiz = export_language_wizard_model.act_getfile(wizard_instance)
+        resulting_wiz_id = resulting_wiz['res_id']
+        # Read out the resulting wizard, containing file data:
+        resulting_wiz_data = export_language_wizard_model.read(resulting_wiz_id, fields=['state', 'data', 'name',])
+        if resulting_wiz_data['state'] != 'get':
+            raise OdooCommException("Error: Translation PO file export failure.")
+        # Decode received data by base64 (always decode according to Latin-15; see above):
+        decoded_file = base64.decodebytes(bytes(resulting_wiz_data['data'], "iso-8859-15"))
+        # Else, write out data to file:
+        with open(filename, "w") as outfl:
+            # We want to save PO files always as UTF-8:
+            outfl.write( str(decoded_file, "utf-8") )
+        return decoded_file
     
     # Correção de traduções por find&replace:
     def patch_translation(self, lang, to_find, replace_to):
@@ -1075,5 +1253,5 @@ class OdooCommunicator:
                 ])
         # First load partners, then employees, finally ibans (they may already
         # exist overwritten by the load() method):
-        self.doload("res.partner", loadable_partners_cols, loadable_partners, context={})
-        self.doload("hr.employee", loadable_employees_cols, loadable_employees, context={})
+        self._lowlevel_odoorpc_model_load("res.partner", loadable_partners_cols, loadable_partners, context={})
+        self._lowlevel_odoorpc_model_load("hr.employee", loadable_employees_cols, loadable_employees, context={})

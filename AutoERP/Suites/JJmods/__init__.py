@@ -18,7 +18,7 @@ def port_app(basedir, app_name_camelcase, target_name):
     pporter.do_preprocess_directory()
 
 APPS_TO_PORT = [
-    { 'name': "PayslipAdvancedInfoTab",          'exclude_rels': [] },
+    { 'name': "PayslipAdvancedInfoTab",           'exclude_rels': [] },
     
     { 'name': "PayslipAggregateRule",             'exclude_rels': [] },
     { 'name': "PayrollTypesafeFormulas",          'exclude_rels': [] },
