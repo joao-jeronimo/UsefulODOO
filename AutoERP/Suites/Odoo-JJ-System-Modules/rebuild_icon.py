@@ -8,29 +8,14 @@ the_cylinder = wrlgen.Concretize(
     )
 
 resulting_file = wrlgen.VmrlModel([
-    wrlgen.Transform(
-        translate = (0, 21, 0),
+    wrlgen.Stack(
         objects=[
             the_cylinder,
-            ]
-        ),
-    wrlgen.Transform(
-        translate = (0, 14, 0),
-        objects=[
             the_cylinder,
-            ]
-        ),
-    wrlgen.Transform(
-        translate = (0, 7, 0),
-        objects=[
             the_cylinder,
-            ]
-        ),
-    wrlgen.Transform(
-        translate = (0, 0, 0),
-        objects=[
             the_cylinder,
-            ]
+            ],
+        spacing=7,
         ),
     ])
 

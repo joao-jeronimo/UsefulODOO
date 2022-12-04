@@ -5,7 +5,7 @@ DirectionalLight {
 }
 
     Transform {
-        translation 0 21 0
+        translation 0 0 0
         children [
             
 Shape {
@@ -20,24 +20,6 @@ geometry Cylinder {
 
         ]
     }
-
-    Transform {
-        translation 0 14 0
-        children [
-            
-Shape {
-    appearance Appearance { material Material { diffuseColor 0.500000 0.500000 0.500000 } }
-    
-geometry Cylinder {
-    radius 10
-    height 5
-    }
-
-}
-
-        ]
-    }
-
     Transform {
         translation 0 7 0
         children [
@@ -54,9 +36,24 @@ geometry Cylinder {
 
         ]
     }
-
     Transform {
-        translation 0 0 0
+        translation 0 14 0
+        children [
+            
+Shape {
+    appearance Appearance { material Material { diffuseColor 0.500000 0.500000 0.500000 } }
+    
+geometry Cylinder {
+    radius 10
+    height 5
+    }
+
+}
+
+        ]
+    }
+    Transform {
+        translation 0 21 0
         children [
             
 Shape {

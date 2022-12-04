@@ -23,6 +23,20 @@ def Transform(translate=False, objects=[]):
         'objects'           : "\n".join(objects),
         }
 
+def Stack(objects, spacing):
+    """
+    Stack objects verticaly. Post-Rotate to get a stack in other directions.
+    """
+    resultstack = ""
+    offset = 0
+    for obj in objects:
+        resultstack += Transform(
+            translate=(0, offset, 0),
+            objects=[ obj ],
+            )
+        offset += spacing
+    return resultstack
+
 def RawCylinder(radius, height):
     return """
 geometry Cylinder {
