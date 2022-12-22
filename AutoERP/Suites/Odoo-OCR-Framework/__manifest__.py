@@ -30,6 +30,8 @@
             },
         ],
     'modules':  [
+        # Code analysis apps:
+        { 'name': 'analyse_onchange',                     'active': ["15.0", ], },
         # Base apps:
         { 'name': 'event_followmouse',                    'active': ["15.0", ], },
         { 'name': 'dynamic_attachments',                  'active': ["15.0", ], },
